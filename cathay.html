@@ -175,15 +175,25 @@
                                 </div>
                                 <div>
                                     <label class="block text-gray-700 mb-1">服務人員</label>
-                                    <input
-                                        type="text"
-                                        id="agent"
-                                        list="agent-options"
-                                        autocomplete="off"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 p-2 border bg-white"
-                                        placeholder="請選擇或輸入服務人員"
-                                    />
-                                    <datalist id="agent-options"></datalist>
+                                    <div id="agent-picker" class="relative">
+                                        <input
+                                            type="text"
+                                            id="agent"
+                                            autocomplete="off"
+                                            role="combobox"
+                                            aria-autocomplete="list"
+                                            aria-expanded="false"
+                                            aria-controls="agent-options-panel"
+                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 p-2 pr-9 border bg-white"
+                                            placeholder="請選擇或輸入服務人員"
+                                        />
+                                        <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
+                                        <div
+                                            id="agent-options-panel"
+                                            role="listbox"
+                                            class="hidden absolute left-0 right-0 z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl"
+                                        ></div>
+                                    </div>
                                     <p id="agent-status" class="text-[11px] text-gray-500 mt-1">正在載入團隊成員...</p>
                                 </div>
                                 <div>
@@ -320,6 +330,9 @@
             apiUrl: 'https://script.google.com/macros/s/AKfycbwhFC-vHbVdPBtW8s_cwj0_dDnzpzeBEZ4suM-lGpAewBHIRdZd0_N6BX7poAg0ueLplA/exec'
         };
 
+        let teamMemberNames = [];
+        let activeAgentOptionIndex = -1;
+
         document.addEventListener('DOMContentLoaded', bootstrap);
 
         function bootstrap() {
@@ -330,6 +343,7 @@
         }
 
         function initSurveyPage() {
+            setupAgentPicker();
             loadAgentNames();
 
             const otherCheckbox = document.getElementById('other');
@@ -357,21 +371,128 @@
                     throw new Error(result && result.message ? result.message : '無法載入團隊成員。');
                 }
 
-                const datalist = document.getElementById('agent-options');
-                datalist.innerHTML = '';
-                (result.names || []).forEach((name) => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    datalist.appendChild(option);
-                });
+                teamMemberNames = Array.from(new Set(
+                    (result.names || []).map((name) => String(name || '').trim()).filter(Boolean)
+                ));
 
-                status.textContent = result.names && result.names.length
-                    ? '請從團隊成員名單選擇；也可直接輸入姓名。'
+                status.classList.remove('text-red-600');
+                status.textContent = teamMemberNames.length
+                    ? `已載入 ${teamMemberNames.length} 位團隊成員；點擊欄位可查看完整名單。`
                     : '目前沒有團隊成員資料。';
+
+                if (document.activeElement === document.getElementById('agent')) {
+                    renderAgentOptions('');
+                }
             } catch (error) {
                 status.textContent = errorText(error);
                 status.classList.add('text-red-600');
             }
+        }
+
+        function setupAgentPicker() {
+            const picker = document.getElementById('agent-picker');
+            const input = document.getElementById('agent');
+
+            input.addEventListener('focus', () => renderAgentOptions(''));
+            input.addEventListener('click', () => renderAgentOptions(''));
+            input.addEventListener('input', () => renderAgentOptions(input.value));
+            input.addEventListener('keydown', handleAgentPickerKeydown);
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if (!picker.contains(document.activeElement)) closeAgentOptions();
+                }, 120);
+            });
+
+            document.addEventListener('pointerdown', (event) => {
+                if (!picker.contains(event.target)) closeAgentOptions();
+            });
+        }
+
+        function renderAgentOptions(filterText) {
+            const input = document.getElementById('agent');
+            const panel = document.getElementById('agent-options-panel');
+            const keyword = String(filterText || '').trim().toLocaleLowerCase('zh-TW');
+            const filteredNames = keyword
+                ? teamMemberNames.filter((name) => name.toLocaleLowerCase('zh-TW').includes(keyword))
+                : teamMemberNames.slice();
+
+            panel.innerHTML = '';
+            activeAgentOptionIndex = -1;
+
+            if (!teamMemberNames.length) {
+                closeAgentOptions();
+                return;
+            }
+
+            if (!filteredNames.length) {
+                const empty = document.createElement('div');
+                empty.className = 'px-3 py-3 text-sm text-gray-500';
+                empty.textContent = '沒有符合的團隊成員；仍可直接輸入姓名。';
+                panel.appendChild(empty);
+            } else {
+                filteredNames.forEach((name) => {
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.role = 'option';
+                    option.dataset.agentOption = name;
+                    option.className = 'block w-full border-b border-gray-100 px-3 py-3 text-left text-sm text-gray-800 last:border-b-0 hover:bg-green-50 focus:bg-green-50 focus:outline-none';
+                    option.textContent = name;
+                    option.addEventListener('pointerdown', (event) => event.preventDefault());
+                    option.addEventListener('click', () => selectAgentName(name));
+                    panel.appendChild(option);
+                });
+            }
+
+            panel.classList.remove('hidden');
+            input.setAttribute('aria-expanded', 'true');
+        }
+
+        function selectAgentName(name) {
+            const input = document.getElementById('agent');
+            input.value = name;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            closeAgentOptions();
+            input.focus();
+        }
+
+        function closeAgentOptions() {
+            const input = document.getElementById('agent');
+            const panel = document.getElementById('agent-options-panel');
+            panel.classList.add('hidden');
+            input.setAttribute('aria-expanded', 'false');
+            activeAgentOptionIndex = -1;
+        }
+
+        function handleAgentPickerKeydown(event) {
+            const panel = document.getElementById('agent-options-panel');
+            const options = Array.from(panel.querySelectorAll('[data-agent-option]'));
+
+            if (event.key === 'Escape') {
+                closeAgentOptions();
+                return;
+            }
+            if (!options.length || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'Enter')) {
+                return;
+            }
+            if (event.key === 'Enter') {
+                if (activeAgentOptionIndex >= 0) {
+                    event.preventDefault();
+                    selectAgentName(options[activeAgentOptionIndex].dataset.agentOption);
+                }
+                return;
+            }
+
+            event.preventDefault();
+            const direction = event.key === 'ArrowDown' ? 1 : -1;
+            activeAgentOptionIndex = activeAgentOptionIndex < 0
+                ? (direction > 0 ? 0 : options.length - 1)
+                : (activeAgentOptionIndex + direction + options.length) % options.length;
+
+            options.forEach((option, index) => {
+                option.classList.toggle('bg-green-50', index === activeAgentOptionIndex);
+                option.setAttribute('aria-selected', index === activeAgentOptionIndex ? 'true' : 'false');
+            });
+            options[activeAgentOptionIndex].scrollIntoView({ block: 'nearest' });
         }
 
         async function submitSurvey() {

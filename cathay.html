@@ -355,7 +355,6 @@
 
         <div id="family-pdf-content" class="bg-[#eaf4f7]">
             <header class="relative overflow-hidden bg-gradient-to-br from-[#e9f5f7] via-white to-[#dff1f1] px-5 pb-7 pt-5 sm:px-9 sm:pb-9">
-                <div class="absolute -right-14 -top-14 h-40 w-40 rounded-full border-[22px] border-[#8dd1c9]/20"></div>
                 <div class="relative flex items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <img src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-11 w-11 rounded-lg object-contain" />
@@ -364,27 +363,35 @@
                             <p class="text-[9px] font-semibold tracking-[.18em] text-[#559b98]">CATHAY LIFE INSURANCE</p>
                         </div>
                     </div>
-                    <span class="rounded-full bg-[#319691] px-3 py-1 text-[11px] font-bold text-white">家庭保障全攻略</span>
+                    <img src="https://i.ibb.co/XxZbJvjp/image.jpg" alt="人生進度道路插圖" class="h-auto w-28 rounded-xl border border-[#c7e2e2] object-contain shadow-sm sm:w-36" />
                 </div>
                 <div class="relative mt-7 sm:mt-9">
-                    <p class="text-sm font-bold tracking-[.28em] text-[#2f8eaa]">人生有進度</p>
-                    <h1 class="mt-1 text-3xl font-black tracking-wide text-[#267f9b] sm:text-4xl">保障要同步</h1>
+                    <h1 class="sr-only">人生有進度，保障要同步</h1>
+                    <img src="https://i.ibb.co/fVrHfSgf/image.jpg" alt="人生有進度，保障要同步" class="h-auto w-full max-w-[520px] rounded-xl object-contain" />
                     <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600">隨著人生不同階段的轉變，家庭責任與保障需求也會有所不同，我們特別安排專人為您進行家庭保障健檢，讓保障跟上人生每個重要階段。</p>
                 </div>
             </header>
 
             <form id="family-form" class="space-y-7 px-4 py-6 sm:px-7 sm:py-8">
+                <section class="space-y-3">
+                    <img src="https://i.ibb.co/KpXJj4Vj/image.jpg" alt="家庭責任與保障需求會隨人生改變" class="h-auto w-full rounded-xl object-contain shadow-sm" />
+                    <img src="https://i.ibb.co/TBQbcdky/image.jpg" alt="您正處於哪個人生階段" class="h-auto w-full rounded-xl object-contain shadow-sm" />
+                </section>
+
                 <section class="overflow-hidden rounded-2xl border border-[#c7e2e2] bg-white p-2 shadow-sm sm:p-3">
                     <img
-                        src="https://i.ibb.co/rKCVZFg0/2.png"
+                        src="https://i.ibb.co/ZzTRsNB7/jpg.jpg"
                         alt="家庭保障六個人生階段說明"
                         class="h-auto w-full rounded-xl object-contain"
                         loading="eager"
                     />
                 </section>
 
-                <section class="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
-                    <div class="mb-4 flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#319691] text-sm font-black text-white">1</span><h2 class="font-black text-[#246f86]">最近一次檢視自己的保障是？</h2></div>
+                <section class="relative mt-10 rounded-2xl border-2 border-[#399b98] bg-white px-4 pb-5 pt-8 shadow-sm sm:px-6">
+                    <div class="absolute -top-5 left-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-full bg-[#399b98] py-1.5 pl-1.5 pr-5 shadow-sm">
+                        <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white text-base font-black text-[#399b98]">1</span>
+                        <h2 class="text-sm font-black text-white sm:text-base">最近一次檢視自己的保障是？</h2>
+                    </div>
                     <div class="grid gap-2 sm:grid-cols-4">
                         <label class="survey-choice flex cursor-pointer items-center gap-2 rounded-xl border-2 border-slate-100 px-3 py-3"><input class="sr-only" type="radio" name="family-last-review" value="within_one_year" /><span class="choice-dot h-4 w-4 flex-none rounded-full border-2 border-slate-300"></span><span class="text-sm font-bold text-slate-700">1年內</span></label>
                         <label class="survey-choice flex cursor-pointer items-center gap-2 rounded-xl border-2 border-slate-100 px-3 py-3"><input class="sr-only" type="radio" name="family-last-review" value="one_to_three_years" /><span class="choice-dot h-4 w-4 flex-none rounded-full border-2 border-slate-300"></span><span class="text-sm font-bold text-slate-700">1－3年</span></label>
@@ -393,27 +400,39 @@
                     </div>
                 </section>
 
-                <section>
-                    <div class="mb-4 flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#319691] text-sm font-black text-white">2</span><div><h2 class="font-black text-[#246f86]">現階段，您最在意的是什麼？</h2><p class="text-xs text-slate-500">可複選</p></div></div>
+                <section class="relative mt-10 rounded-2xl border-2 border-[#399b98] bg-white px-3 pb-5 pt-9 shadow-sm sm:px-5">
+                    <div class="absolute -top-5 left-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-full bg-[#399b98] py-1.5 pl-1.5 pr-5 shadow-sm">
+                        <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white text-base font-black text-[#399b98]">2</span>
+                        <h2 class="text-sm font-black text-white sm:text-base">現階段，您最在意的是什麼？</h2>
+                    </div>
+                    <p class="mb-3 text-xs font-bold text-[#4c8f8b]">可複選</p>
                     <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="medical_costs" /><i data-lucide="heart-pulse" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">未來醫療費用</span></label>
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="living_expenses" /><i data-lucide="wallet-cards" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">家庭生活開銷</span></label>
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="mortgage_loans" /><i data-lucide="house" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">房貸或其他貸款</span></label>
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="education_fund" /><i data-lucide="graduation-cap" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">子女教育基金</span></label>
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="parent_care" /><i data-lucide="heart-handshake" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">父母照護責任</span></label>
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="retirement_preparation" /><i data-lucide="sunset" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">退休生活準備</span></label>
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="estate_planning" /><i data-lucide="landmark" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">資產傳承規劃</span></label>
-                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="income_interruption" /><i data-lucide="shield-alert" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">意外造成收入中斷</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="medical_costs" /><i data-lucide="heart-pulse" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">未來醫療費用</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="living_expenses" /><i data-lucide="wallet-cards" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">家庭生活開銷</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="mortgage_loans" /><i data-lucide="house" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">房貸或其他貸款</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="education_fund" /><i data-lucide="graduation-cap" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">子女教育基金</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="parent_care" /><i data-lucide="heart-handshake" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">父母照護責任</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="retirement_preparation" /><i data-lucide="sunset" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">退休生活準備</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="estate_planning" /><i data-lucide="landmark" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">資產傳承規劃</span></label>
+                        <label class="family-check relative cursor-pointer rounded-xl border-2 border-white bg-white p-3 pr-9 text-center shadow-sm"><input class="absolute right-3 top-3 h-5 w-5 cursor-pointer accent-[#319691]" type="checkbox" data-family-concern value="income_interruption" /><i data-lucide="shield-alert" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">意外造成收入中斷</span></label>
                     </div>
                 </section>
 
-                <section class="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
-                    <div class="mb-4 flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#319691] text-sm font-black text-white">3</span><div><h2 class="font-black text-[#246f86]">家庭保障年度健檢</h2><p class="text-xs text-slate-500">請勾選這次希望優先檢視的項目</p></div></div>
+                <section class="relative mt-10 rounded-2xl border-2 border-[#399b98] bg-white px-4 pb-5 pt-9 shadow-sm sm:px-6">
+                    <div class="absolute -top-5 left-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-full bg-[#399b98] py-1.5 pl-1.5 pr-5 shadow-sm">
+                        <span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white text-base font-black text-[#399b98]">3</span>
+                        <h2 class="text-sm font-black text-white sm:text-base">家庭保障年度健檢</h2>
+                    </div>
+                    <p class="mb-3 text-xs font-bold text-[#4c8f8b]">請勾選這次希望優先檢視的項目</p>
                     <div class="grid gap-3 sm:grid-cols-3">
                         <div class="rounded-xl bg-[#edf8f7] p-4"><div class="mb-3 flex items-center gap-2 font-black text-[#267f7b]"><i data-lucide="stethoscope" class="h-5 w-5"></i>醫療缺口</div><label class="flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="medical_reimbursement" />醫療實支額度</label><label class="mt-2 flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="critical_illness" />重大傷病或癌症保障</label></div>
                         <div class="rounded-xl bg-[#edf8f7] p-4"><div class="mb-3 flex items-center gap-2 font-black text-[#267f7b]"><i data-lucide="house-heart" class="h-5 w-5"></i>家庭責任</div><label class="flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="mortgage_risk" />房貸風險安排</label><label class="mt-2 flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="education_protection" />教育金保障</label></div>
                         <div class="rounded-xl bg-[#edf8f7] p-4"><div class="mb-3 flex items-center gap-2 font-black text-[#267f7b]"><i data-lucide="umbrella" class="h-5 w-5"></i>退休規劃</div><label class="flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="retirement_income" />退休養老金</label><label class="mt-2 flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="long_term_care" />長期照護準備</label></div>
                     </div>
+                </section>
+
+                <section class="overflow-hidden rounded-2xl border border-[#c7e2e2] bg-white p-2 shadow-sm sm:p-3">
+                    <img src="https://i.ibb.co/p6pZMRpj/image.jpg" alt="家庭保障應隨人生持續調整" class="h-auto w-full rounded-xl object-contain" />
                 </section>
 
                 <section class="rounded-2xl border border-[#c9e1e4] bg-white/95 p-4 shadow-sm sm:p-6">

@@ -3,18 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>國泰人壽 - 保單健檢</title>
+    <title>國泰人壽 - 問卷中心</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- 引入 html2pdf.js 用於產生 PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .survey-choice:has(input:checked) { border-color: #319691; background: #eaf8f6; box-shadow: 0 0 0 3px rgba(49,150,145,.14); }
+        .survey-choice:has(input:checked) .choice-dot { background: #319691; border-color: #319691; box-shadow: inset 0 0 0 4px #fff; }
+        .family-check:has(input:checked) { border-color: #319691; background: #eaf8f6; }
+        .family-check:has(input:checked) i { color: #267f7b; }
+    </style>
 </head>
 <body class="min-h-screen bg-gray-100 py-4 sm:py-6 px-2 sm:px-4 font-sans flex justify-center">
 
+    <!-- 同一網站的問卷選擇首頁 -->
+    <main id="template-picker-view" class="hidden w-full max-w-[800px] self-start overflow-hidden rounded-2xl border border-[#cfe3e8] bg-[#edf7fa] shadow-xl">
+        <header class="relative overflow-hidden bg-gradient-to-br from-[#2f9791] to-[#277f9d] px-6 py-8 text-white sm:px-10">
+            <div class="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-white/10"></div>
+            <div class="relative flex items-center gap-3">
+                <img src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-12 w-12 rounded-lg object-contain" />
+                <div>
+                    <p class="text-xs font-semibold tracking-[.28em] text-white/80">CATHAY LIFE</p>
+                    <h1 class="mt-1 text-2xl font-black tracking-wide sm:text-3xl">問卷中心</h1>
+                </div>
+            </div>
+            <p class="relative mt-5 max-w-xl text-sm leading-7 text-white/90">請選擇本次要填寫的問卷。每一份問卷會分開保存名稱、版本與回答明細。</p>
+        </header>
+        <section class="p-5 sm:p-8">
+            <div id="template-card-list" class="grid gap-4 sm:grid-cols-2"></div>
+            <p id="template-picker-status" class="mt-5 text-center text-xs text-slate-500">正在確認可使用的問卷...</p>
+        </section>
+    </main>
+
     <!-- 限制最大寬度 -->
-    <div id="survey-app" class="w-full max-w-[800px] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 relative">
+    <div id="policy-survey-view" class="hidden w-full max-w-[800px] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 relative self-start">
+        <div class="flex items-center justify-between border-b border-green-100 bg-white px-4 py-2">
+            <span class="text-xs font-bold text-green-800">保單健檢</span>
+            <button type="button" data-switch-survey class="rounded-full border border-green-200 px-3 py-1.5 text-xs font-bold text-green-700 hover:bg-green-50">切換問卷</button>
+        </div>
         
         <!-- PDF 擷取區塊 -->
         <div id="pdf-content" class="w-full bg-white text-left">
@@ -25,10 +54,9 @@
                 <div class="bg-green-50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
                     <div class="flex items-center space-x-3">
                         <img 
-                            src="https://i.ibb.co/qFjzmVZk.png" 
+                            src="https://i.ibb.co/21Q7LfpT/image.png" 
                             alt="國泰人壽 Logo" 
                             class="w-10 h-10 sm:w-11 sm:h-11 object-contain flex-shrink-0"
-                            onerror="this.onerror=null; this.src='https://i.ibb.co/21Q7LfpT/image.png';"
                         />
                         <div>
                             <h1 class="text-xl font-bold text-green-800 tracking-wider">國泰人壽</h1>
@@ -318,6 +346,100 @@
 
     </div>
 
+    <!-- 家庭保障問卷：依原始 PDF 的淡藍、藍綠分區與人生階段卡片重新設計 -->
+    <main id="family-survey-view" class="hidden w-full max-w-[800px] self-start overflow-hidden rounded-xl border border-[#c8dfe5] bg-[#eaf4f7] shadow-xl">
+        <div class="flex items-center justify-between border-b border-[#c8e4e2] bg-white/90 px-4 py-2">
+            <span class="text-xs font-bold text-[#267f7b]">家庭保障</span>
+            <button type="button" data-switch-survey class="rounded-full border border-[#aad8d4] px-3 py-1.5 text-xs font-bold text-[#267f7b] hover:bg-[#eaf8f6]">切換問卷</button>
+        </div>
+
+        <div id="family-pdf-content" class="bg-[#eaf4f7]">
+            <header class="relative overflow-hidden bg-gradient-to-br from-[#e9f5f7] via-white to-[#dff1f1] px-5 pb-7 pt-5 sm:px-9 sm:pb-9">
+                <div class="absolute -right-14 -top-14 h-40 w-40 rounded-full border-[22px] border-[#8dd1c9]/20"></div>
+                <div class="relative flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <img src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-11 w-11 rounded-lg object-contain" />
+                        <div>
+                            <p class="text-lg font-black tracking-wider text-[#207e78]">國泰人壽</p>
+                            <p class="text-[9px] font-semibold tracking-[.18em] text-[#559b98]">CATHAY LIFE INSURANCE</p>
+                        </div>
+                    </div>
+                    <span class="rounded-full bg-[#319691] px-3 py-1 text-[11px] font-bold text-white">家庭保障全攻略</span>
+                </div>
+                <div class="relative mt-7 sm:mt-9">
+                    <p class="text-sm font-bold tracking-[.28em] text-[#2f8eaa]">人生有進度</p>
+                    <h1 class="mt-1 text-3xl font-black tracking-wide text-[#267f9b] sm:text-4xl">保障要同步</h1>
+                    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600">隨著人生不同階段的轉變，家庭責任與保障需求也會有所不同，我們特別安排專人為您進行家庭保障健檢，讓保障跟上人生每個重要階段。</p>
+                </div>
+            </header>
+
+            <form id="family-form" class="space-y-7 px-4 py-6 sm:px-7 sm:py-8">
+                <section class="overflow-hidden rounded-2xl border border-[#c7e2e2] bg-white p-2 shadow-sm sm:p-3">
+                    <img
+                        src="https://i.ibb.co/rKCVZFg0/2.png"
+                        alt="家庭保障六個人生階段說明"
+                        class="h-auto w-full rounded-xl object-contain"
+                        loading="eager"
+                    />
+                </section>
+
+                <section class="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
+                    <div class="mb-4 flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#319691] text-sm font-black text-white">1</span><h2 class="font-black text-[#246f86]">最近一次檢視自己的保障是？</h2></div>
+                    <div class="grid gap-2 sm:grid-cols-4">
+                        <label class="survey-choice flex cursor-pointer items-center gap-2 rounded-xl border-2 border-slate-100 px-3 py-3"><input class="sr-only" type="radio" name="family-last-review" value="within_one_year" /><span class="choice-dot h-4 w-4 flex-none rounded-full border-2 border-slate-300"></span><span class="text-sm font-bold text-slate-700">1年內</span></label>
+                        <label class="survey-choice flex cursor-pointer items-center gap-2 rounded-xl border-2 border-slate-100 px-3 py-3"><input class="sr-only" type="radio" name="family-last-review" value="one_to_three_years" /><span class="choice-dot h-4 w-4 flex-none rounded-full border-2 border-slate-300"></span><span class="text-sm font-bold text-slate-700">1－3年</span></label>
+                        <label class="survey-choice flex cursor-pointer items-center gap-2 rounded-xl border-2 border-slate-100 px-3 py-3"><input class="sr-only" type="radio" name="family-last-review" value="over_three_years" /><span class="choice-dot h-4 w-4 flex-none rounded-full border-2 border-slate-300"></span><span class="text-sm font-bold text-slate-700">超過3年</span></label>
+                        <label class="survey-choice flex cursor-pointer items-center gap-2 rounded-xl border-2 border-slate-100 px-3 py-3"><input class="sr-only" type="radio" name="family-last-review" value="do_not_remember" /><span class="choice-dot h-4 w-4 flex-none rounded-full border-2 border-slate-300"></span><span class="text-sm font-bold text-slate-700">不記得了</span></label>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="mb-4 flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#319691] text-sm font-black text-white">2</span><div><h2 class="font-black text-[#246f86]">現階段，您最在意的是什麼？</h2><p class="text-xs text-slate-500">可複選</p></div></div>
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="medical_costs" /><i data-lucide="heart-pulse" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">未來醫療費用</span></label>
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="living_expenses" /><i data-lucide="wallet-cards" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">家庭生活開銷</span></label>
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="mortgage_loans" /><i data-lucide="house" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">房貸或其他貸款</span></label>
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="education_fund" /><i data-lucide="graduation-cap" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">子女教育基金</span></label>
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="parent_care" /><i data-lucide="heart-handshake" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">父母照護責任</span></label>
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="retirement_preparation" /><i data-lucide="sunset" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">退休生活準備</span></label>
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="estate_planning" /><i data-lucide="landmark" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">資產傳承規劃</span></label>
+                        <label class="family-check cursor-pointer rounded-xl border-2 border-white bg-white p-3 text-center shadow-sm"><input class="sr-only" type="checkbox" data-family-concern value="income_interruption" /><i data-lucide="shield-alert" class="mx-auto mb-2 h-6 w-6 text-[#5b9ead]"></i><span class="text-xs font-bold text-slate-700">意外造成收入中斷</span></label>
+                    </div>
+                </section>
+
+                <section class="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
+                    <div class="mb-4 flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#319691] text-sm font-black text-white">3</span><div><h2 class="font-black text-[#246f86]">家庭保障年度健檢</h2><p class="text-xs text-slate-500">請勾選這次希望優先檢視的項目</p></div></div>
+                    <div class="grid gap-3 sm:grid-cols-3">
+                        <div class="rounded-xl bg-[#edf8f7] p-4"><div class="mb-3 flex items-center gap-2 font-black text-[#267f7b]"><i data-lucide="stethoscope" class="h-5 w-5"></i>醫療缺口</div><label class="flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="medical_reimbursement" />醫療實支額度</label><label class="mt-2 flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="critical_illness" />重大傷病或癌症保障</label></div>
+                        <div class="rounded-xl bg-[#edf8f7] p-4"><div class="mb-3 flex items-center gap-2 font-black text-[#267f7b]"><i data-lucide="house-heart" class="h-5 w-5"></i>家庭責任</div><label class="flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="mortgage_risk" />房貸風險安排</label><label class="mt-2 flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="education_protection" />教育金保障</label></div>
+                        <div class="rounded-xl bg-[#edf8f7] p-4"><div class="mb-3 flex items-center gap-2 font-black text-[#267f7b]"><i data-lucide="umbrella" class="h-5 w-5"></i>退休規劃</div><label class="flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="retirement_income" />退休養老金</label><label class="mt-2 flex gap-2 text-xs text-slate-700"><input type="checkbox" data-family-review-item value="long_term_care" />長期照護準備</label></div>
+                    </div>
+                </section>
+
+                <section class="rounded-2xl border border-[#c9e1e4] bg-white/95 p-4 shadow-sm sm:p-6">
+                    <div class="mb-5 space-y-2 text-sm">
+                        <label class="flex items-start gap-2"><input type="checkbox" id="family-explained" class="mt-1" /><span class="text-slate-700">服務人員已親自說明內容與個資告知事項。</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox" id="family-referral" class="mt-1" /><span class="text-slate-700">願意介紹身邊朋友瞭解並關注保障檢視。</span></label>
+                    </div>
+                    <div class="grid gap-4 text-sm sm:grid-cols-2">
+                        <div><label class="mb-1 block font-bold text-slate-700">姓名</label><input id="family-name" type="text" class="w-full rounded-lg border border-slate-300 p-2.5 focus:border-[#319691] focus:outline-none" placeholder="請輸入您的姓名" /></div>
+                        <div><label class="mb-1 block font-bold text-slate-700">手機</label><input id="family-phone" type="tel" class="w-full rounded-lg border border-slate-300 p-2.5 focus:border-[#319691] focus:outline-none" placeholder="請輸入手機號碼" /></div>
+                        <div><label class="mb-1 block font-bold text-slate-700">拜訪人員</label><select id="family-agent" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 focus:border-[#319691] focus:outline-none"><option value="">正在載入團隊成員...</option></select><p id="family-agent-status" class="mt-1 text-[11px] text-slate-500"></p></div>
+                        <div><label class="mb-1 block font-bold text-slate-700">拜訪日期</label><input id="family-visit-date" type="date" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 focus:border-[#319691] focus:outline-none" /></div>
+                    </div>
+                    <p class="mt-5 border-t border-slate-200 pt-4 text-[10px] leading-5 text-slate-500">保障不是規劃一次就好，而是隨著人生持續調整。若有結婚、生子、買房等重大人生轉變，建議主動聯繫服務人員安排家庭保障健檢。</p>
+                </section>
+            </form>
+        </div>
+
+        <div class="border-t border-[#c8dfe5] bg-white p-4 sm:p-6">
+            <div class="flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <button id="family-submit-btn" class="w-full rounded-full bg-[#319691] px-8 py-3 font-bold text-white shadow-lg transition hover:bg-[#267f7b] sm:w-auto">完成填寫並送出</button>
+                <button id="family-download-btn" class="w-full rounded-full bg-[#267f9b] px-8 py-3 font-bold text-white shadow-lg transition hover:bg-[#1e667d] sm:w-auto">本次填寫紀錄留存</button>
+            </div>
+        </div>
+    </main>
+
     <!-- 提交成功的 Toast 提示 -->
     <div id="toast" class="hidden fixed bottom-5 right-5 left-5 sm:left-auto bg-green-800 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center space-x-3 transition-opacity duration-300">
         <i data-lucide="shield-alert" class="w-6 h-6 text-green-300 flex-shrink-0"></i>
@@ -330,12 +452,29 @@
             apiUrl: 'https://script.google.com/macros/s/AKfycbwhFC-vHbVdPBtW8s_cwj0_dDnzpzeBEZ4suM-lGpAewBHIRdZd0_N6BX7poAg0ueLplA/exec'
         };
 
-        const SUPPORTED_SURVEY_FORM_IDS = ['policy-check'];
-        let activeSurveyTemplate = {
-            formId: 'policy-check',
-            formName: '保單健檢',
-            version: '1'
-        };
+        const SUPPORTED_SURVEY_FORM_IDS = ['policy-check', 'family-protection'];
+        const BUILT_IN_SURVEY_TEMPLATES = [
+            {
+                formId: 'policy-check',
+                formName: '保單健檢',
+                version: '1',
+                title: '國泰人壽保戶權益服務問卷',
+                description: '確認保單資料與常用保戶服務。',
+                showOnHome: true,
+                sortOrder: 1
+            },
+            {
+                formId: 'family-protection',
+                formName: '家庭保障',
+                version: '2',
+                title: '人生有進度，保障要同步',
+                description: '從人生階段、家庭責任與保障需求完成年度健檢。',
+                showOnHome: true,
+                sortOrder: 2
+            }
+        ];
+        let availableSurveyTemplates = BUILT_IN_SURVEY_TEMPLATES.slice();
+        let activeSurveyTemplate = BUILT_IN_SURVEY_TEMPLATES[0];
         let teamMemberNames = [];
         let activeAgentOptionIndex = -1;
 
@@ -349,10 +488,10 @@
         }
 
         function initSurveyPage() {
-            updateSurveyTemplateDiagnostics();
             setupAgentPicker();
+            setupTemplateNavigation();
             loadAgentNames();
-            loadSurveyTemplate();
+            loadSurveyTemplates();
 
             const otherCheckbox = document.getElementById('other');
             const otherTextInput = document.getElementById('otherText');
@@ -362,11 +501,23 @@
             });
 
             document.getElementById('submit-btn').addEventListener('click', submitSurvey);
+            document.getElementById('family-submit-btn').addEventListener('click', submitSurvey);
             document.getElementById('download-btn').addEventListener('click', downloadSurveyPdf);
+            document.getElementById('family-download-btn').addEventListener('click', downloadSurveyPdf);
         }
 
-        async function loadSurveyTemplate() {
-            if (!isApiConfigured()) return;
+        function setupTemplateNavigation() {
+            document.querySelectorAll('[data-switch-survey]').forEach((button) => {
+                button.addEventListener('click', showTemplatePicker);
+            });
+            renderSurveyNavigation();
+        }
+
+        async function loadSurveyTemplates() {
+            if (!isApiConfigured()) {
+                document.getElementById('template-picker-status').textContent = '預覽模式：尚未設定 Apps Script Web App URL。';
+                return;
+            }
             try {
                 const result = await api('getSurveyTemplates', {});
                 if (!result || !result.ok) return;
@@ -374,16 +525,84 @@
                 const supported = (result.templates || []).filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
                 );
-                const requestedFormId = new URLSearchParams(window.location.search).get('form');
-                const selected = supported.find((template) => template.formId === requestedFormId)
-                    || supported.find((template) => template.formId === 'policy-check');
-                if (selected) {
-                    activeSurveyTemplate = selected;
-                    updateSurveyTemplateDiagnostics();
-                }
+                if (supported.length) availableSurveyTemplates = supported;
+                renderSurveyNavigation();
             } catch (error) {
                 console.warn('Survey template metadata load failed:', error);
+                document.getElementById('template-picker-status').textContent = '暫時無法讀取線上設定，已顯示內建問卷。';
             }
+        }
+
+        function renderSurveyNavigation() {
+            const requestedFormId = new URLSearchParams(window.location.search).get('form');
+            const requested = availableSurveyTemplates.find((template) => template.formId === requestedFormId);
+            if (requested) {
+                selectSurveyTemplate(requested.formId, false);
+                return;
+            }
+
+            const visibleTemplates = availableSurveyTemplates.filter((template) => template.showOnHome !== false);
+            if (visibleTemplates.length === 1) {
+                selectSurveyTemplate(visibleTemplates[0].formId, false);
+                return;
+            }
+            showTemplatePicker(false);
+        }
+
+        function renderTemplateCards() {
+            const list = document.getElementById('template-card-list');
+            const visibleTemplates = availableSurveyTemplates.filter((template) => template.showOnHome !== false);
+            list.innerHTML = '';
+            visibleTemplates.forEach((template) => {
+                const isFamily = template.formId === 'family-protection';
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'group rounded-2xl border-2 border-white bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#69bbb5] hover:shadow-lg';
+                button.innerHTML = `
+                    <span class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ${isFamily ? 'bg-[#e5f5f3] text-[#267f7b]' : 'bg-green-50 text-green-700'}">
+                        <i data-lucide="${isFamily ? 'house-heart' : 'clipboard-check'}" class="h-7 w-7"></i>
+                    </span>
+                    <span class="block text-lg font-black text-slate-800">${escapeHtml(template.formName)}</span>
+                    <span class="mt-1 block text-sm font-bold ${isFamily ? 'text-[#267f9b]' : 'text-green-700'}">${escapeHtml(template.title || '')}</span>
+                    <span class="mt-3 block text-xs leading-6 text-slate-500">${escapeHtml(template.description || '')}</span>
+                    <span class="mt-4 inline-flex items-center gap-1 text-xs font-black ${isFamily ? 'text-[#267f7b]' : 'text-green-700'}">開始填寫 <i data-lucide="arrow-right" class="h-4 w-4"></i></span>`;
+                button.addEventListener('click', () => selectSurveyTemplate(template.formId, true));
+                list.appendChild(button);
+            });
+            document.getElementById('template-picker-status').textContent = visibleTemplates.length
+                ? `目前共有 ${visibleTemplates.length} 份問卷可填寫。`
+                : '目前沒有設定為首頁顯示的問卷。';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function selectSurveyTemplate(formId, updateUrl) {
+            const selected = availableSurveyTemplates.find((template) => template.formId === formId);
+            if (!selected) return;
+            activeSurveyTemplate = selected;
+            document.getElementById('template-picker-view').classList.add('hidden');
+            document.getElementById('policy-survey-view').classList.toggle('hidden', formId !== 'policy-check');
+            document.getElementById('family-survey-view').classList.toggle('hidden', formId !== 'family-protection');
+            if (updateUrl) setFormQueryParameter(formId);
+            document.title = `國泰人壽 - ${selected.formName}`;
+            updateSurveyTemplateDiagnostics();
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
+        function showTemplatePicker(updateUrl = true) {
+            document.getElementById('policy-survey-view').classList.add('hidden');
+            document.getElementById('family-survey-view').classList.add('hidden');
+            document.getElementById('template-picker-view').classList.remove('hidden');
+            if (updateUrl) setFormQueryParameter('');
+            document.title = '國泰人壽 - 問卷中心';
+            renderTemplateCards();
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
+        function setFormQueryParameter(formId) {
+            const url = new URL(window.location.href);
+            if (formId) url.searchParams.set('form', formId);
+            else url.searchParams.delete('form');
+            window.history.replaceState({}, '', url.toString());
         }
 
         function updateSurveyTemplateDiagnostics() {
@@ -394,9 +613,12 @@
 
         async function loadAgentNames() {
             const status = document.getElementById('agent-status');
+            const familyStatus = document.getElementById('family-agent-status');
             if (!isApiConfigured()) {
                 status.textContent = '尚未設定 Apps Script Web App URL。';
                 status.classList.add('text-red-600');
+                familyStatus.textContent = '尚未設定 Apps Script Web App URL。';
+                familyStatus.classList.add('text-red-600');
                 return;
             }
 
@@ -414,6 +636,11 @@
                 status.textContent = teamMemberNames.length
                     ? `已載入 ${teamMemberNames.length} 位團隊成員；點擊欄位可查看完整名單。`
                     : '目前沒有團隊成員資料。';
+                populateFamilyAgentSelect();
+                familyStatus.classList.remove('text-red-600');
+                familyStatus.textContent = teamMemberNames.length
+                    ? `已載入 ${teamMemberNames.length} 位團隊成員。`
+                    : '目前沒有團隊成員資料。';
 
                 if (document.activeElement === document.getElementById('agent')) {
                     renderAgentOptions('');
@@ -421,7 +648,22 @@
             } catch (error) {
                 status.textContent = errorText(error);
                 status.classList.add('text-red-600');
+                familyStatus.textContent = errorText(error);
+                familyStatus.classList.add('text-red-600');
             }
+        }
+
+        function populateFamilyAgentSelect() {
+            const select = document.getElementById('family-agent');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">請選擇拜訪人員</option>';
+            teamMemberNames.forEach((name) => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+            if (teamMemberNames.includes(currentValue)) select.value = currentValue;
         }
 
         function setupAgentPicker() {
@@ -531,7 +773,9 @@
         }
 
         async function submitSurvey() {
-            const submitBtn = document.getElementById('submit-btn');
+            const submitBtn = document.getElementById(
+                activeSurveyTemplate.formId === 'family-protection' ? 'family-submit-btn' : 'submit-btn'
+            );
             const formData = collectSurveyData();
             const validationMessage = validateSurveyData(formData);
             if (validationMessage) {
@@ -587,6 +831,9 @@
         }
 
         function collectSurveyData() {
+            if (activeSurveyTemplate.formId === 'family-protection') {
+                return collectFamilySurveyData();
+            }
             return {
                 source: 'survey-web',
                 formId: activeSurveyTemplate.formId,
@@ -626,7 +873,43 @@
             };
         }
 
+        function collectFamilySurveyData() {
+            return {
+                source: 'survey-web',
+                formId: activeSurveyTemplate.formId,
+                formName: activeSurveyTemplate.formName,
+                formVersion: activeSurveyTemplate.version,
+                familyAnswers: {
+                    lastReview: checkedValue('input[name="family-last-review"]'),
+                    concerns: checkedValues('[data-family-concern]'),
+                    reviewItems: checkedValues('[data-family-review-item]')
+                },
+                agreements: {
+                    explained: document.getElementById('family-explained').checked,
+                    referral: document.getElementById('family-referral').checked
+                },
+                name: document.getElementById('family-name').value.trim(),
+                phone: document.getElementById('family-phone').value.trim(),
+                agent: document.getElementById('family-agent').value.trim(),
+                visitDate: document.getElementById('family-visit-date').value
+            };
+        }
+
+        function checkedValue(selector) {
+            const checked = document.querySelector(`${selector}:checked`);
+            return checked ? checked.value : '';
+        }
+
+        function checkedValues(selector) {
+            return Array.from(document.querySelectorAll(`${selector}:checked`)).map((input) => input.value);
+        }
+
         function validateSurveyData(data) {
+            if (data.formId === 'family-protection') {
+                if (!data.familyAnswers.lastReview) return '請選擇最近一次檢視保障的時間。';
+                if (!data.familyAnswers.concerns.length) return '請至少選擇一項目前最在意的保障需求。';
+                if (!data.familyAnswers.reviewItems.length) return '請至少選擇一項希望優先檢視的保障。';
+            }
             if (!data.name) return '請填寫客戶姓名。';
             if (!data.phone) return '請填寫客戶手機。';
             if (!data.agent) return '請選擇或輸入服務人員。';
@@ -687,20 +970,21 @@
         }
 
         async function downloadSurveyPdf() {
-            const downloadBtn = document.getElementById('download-btn');
+            const isFamily = activeSurveyTemplate.formId === 'family-protection';
+            const downloadBtn = document.getElementById(isFamily ? 'family-download-btn' : 'download-btn');
             downloadBtn.disabled = true;
             downloadBtn.classList.add('opacity-75', 'cursor-wait');
             downloadBtn.textContent = 'PDF 產生中...';
 
-            const element = document.getElementById('pdf-content');
-            const rawName = document.getElementById('name').value;
-            const rawDate = document.getElementById('visitDate').value;
+            const element = document.getElementById(isFamily ? 'family-pdf-content' : 'pdf-content');
+            const rawName = document.getElementById(isFamily ? 'family-name' : 'name').value;
+            const rawDate = document.getElementById(isFamily ? 'family-visit-date' : 'visitDate').value;
             const nameStr = rawName || '未填寫姓名';
             const dateStr = rawDate ? rawDate.replace(/-/g, '') : '未填寫日期';
 
             const options = {
                 margin: 0,
-                filename: `${nameStr}_${dateStr}.pdf`,
+                filename: `${nameStr}_${activeSurveyTemplate.formName}_${dateStr}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: {
                     scale: 2,
@@ -717,7 +1001,7 @@
                 },
                 pagebreak: {
                     mode: ['css', 'legacy'],
-                    before: '#page2'
+                    before: isFamily ? [] : '#page2'
                 }
             };
 

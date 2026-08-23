@@ -330,6 +330,12 @@
             apiUrl: 'https://script.google.com/macros/s/AKfycbwhFC-vHbVdPBtW8s_cwj0_dDnzpzeBEZ4suM-lGpAewBHIRdZd0_N6BX7poAg0ueLplA/exec'
         };
 
+        const SUPPORTED_SURVEY_FORM_IDS = ['policy-check'];
+        let activeSurveyTemplate = {
+            formId: 'policy-check',
+            formName: '保單健檢',
+            version: '1'
+        };
         let teamMemberNames = [];
         let activeAgentOptionIndex = -1;
 
@@ -343,8 +349,10 @@
         }
 
         function initSurveyPage() {
+            updateSurveyTemplateDiagnostics();
             setupAgentPicker();
             loadAgentNames();
+            loadSurveyTemplate();
 
             const otherCheckbox = document.getElementById('other');
             const otherTextInput = document.getElementById('otherText');
@@ -355,6 +363,33 @@
 
             document.getElementById('submit-btn').addEventListener('click', submitSurvey);
             document.getElementById('download-btn').addEventListener('click', downloadSurveyPdf);
+        }
+
+        async function loadSurveyTemplate() {
+            if (!isApiConfigured()) return;
+            try {
+                const result = await api('getSurveyTemplates', {});
+                if (!result || !result.ok) return;
+
+                const supported = (result.templates || []).filter((template) =>
+                    SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
+                );
+                const requestedFormId = new URLSearchParams(window.location.search).get('form');
+                const selected = supported.find((template) => template.formId === requestedFormId)
+                    || supported.find((template) => template.formId === 'policy-check');
+                if (selected) {
+                    activeSurveyTemplate = selected;
+                    updateSurveyTemplateDiagnostics();
+                }
+            } catch (error) {
+                console.warn('Survey template metadata load failed:', error);
+            }
+        }
+
+        function updateSurveyTemplateDiagnostics() {
+            document.documentElement.dataset.surveyFormId = activeSurveyTemplate.formId || '';
+            document.documentElement.dataset.surveyFormName = activeSurveyTemplate.formName || '';
+            document.documentElement.dataset.surveyFormVersion = activeSurveyTemplate.version || '';
         }
 
         async function loadAgentNames() {
@@ -554,6 +589,9 @@
         function collectSurveyData() {
             return {
                 source: 'survey-web',
+                formId: activeSurveyTemplate.formId,
+                formName: activeSurveyTemplate.formName,
+                formVersion: activeSurveyTemplate.version,
                 basicInfo: {
                     job: document.getElementById('job').checked,
                     phone: document.getElementById('chk-phone').checked,

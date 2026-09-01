@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國泰人壽 - 問卷中心</title>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://i.ibb.co" crossorigin>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- 引入 html2pdf.js 用於產生 PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script async src="https://unpkg.com/lucide@latest" onload="window.lucide && window.lucide.createIcons()"></script>
     <style>
         .survey-choice:has(input:checked) { border-color: #319691; background: #eaf8f6; box-shadow: 0 0 0 3px rgba(49,150,145,.14); }
         .survey-choice:has(input:checked) .choice-dot { background: #319691; border-color: #319691; box-shadow: inset 0 0 0 4px #fff; }
@@ -399,12 +400,14 @@
 
             <form id="family-form" class="space-y-7 px-4 py-6 sm:px-7 sm:py-8">
                 <section class="space-y-3">
-                    <img src="https://i.ibb.co/KpXJj4Vj/image.jpg" alt="家庭責任與保障需求會隨人生改變" class="h-auto w-full rounded-xl object-contain shadow-sm" />
-                    <img src="https://i.ibb.co/TBQbcdky/image.jpg" alt="您正處於哪個人生階段" class="h-auto w-full rounded-xl object-contain shadow-sm" />
+                    <img loading="lazy" decoding="async" src="https://i.ibb.co/KpXJj4Vj/image.jpg" alt="家庭責任與保障需求會隨人生改變" class="h-auto w-full rounded-xl object-contain shadow-sm" />
+                    <img loading="lazy" decoding="async" src="https://i.ibb.co/TBQbcdky/image.jpg" alt="您正處於哪個人生階段" class="h-auto w-full rounded-xl object-contain shadow-sm" />
                 </section>
 
                 <section class="overflow-hidden rounded-2xl border border-[#c7e2e2] bg-white p-2 shadow-sm sm:p-3">
                     <img
+                        loading="lazy"
+                        decoding="async"
                         src="https://i.ibb.co/ZzTRsNB7/jpg.jpg"
                         alt="家庭保障六個人生階段說明"
                         class="h-auto w-full rounded-xl object-contain"
@@ -457,7 +460,7 @@
                 </section>
 
                 <section class="overflow-hidden rounded-2xl border border-[#c7e2e2] bg-white p-2 shadow-sm sm:p-3">
-                    <img src="https://i.ibb.co/p6pZMRpj/image.jpg" alt="家庭保障應隨人生持續調整" class="h-auto w-full rounded-xl object-contain" />
+                    <img loading="lazy" decoding="async" src="https://i.ibb.co/p6pZMRpj/image.jpg" alt="家庭保障應隨人生持續調整" class="h-auto w-full rounded-xl object-contain" />
                 </section>
 
                 <section class="rounded-2xl border border-[#c9e1e4] bg-white/95 p-4 shadow-sm sm:p-6">
@@ -503,6 +506,8 @@
             apiUrl: 'https://script.google.com/macros/s/AKfycbwhFC-vHbVdPBtW8s_cwj0_dDnzpzeBEZ4suM-lGpAewBHIRdZd0_N6BX7poAg0ueLplA/exec'
         };
 
+        const HTML2PDF_SCRIPT_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+
         const SUPPORTED_SURVEY_FORM_IDS = ['policy-check', 'family-protection'];
         const BUILT_IN_SURVEY_TEMPLATES = [
             {
@@ -528,8 +533,11 @@
         let activeSurveyTemplate = BUILT_IN_SURVEY_TEMPLATES[0];
         let teamMemberNames = [];
         let activeAgentOptionIndex = -1;
+        let html2PdfLoadPromise = null;
         const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
         const AGENT_NAMES_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+        const SURVEY_TEMPLATES_CACHE_PREFIX = 'survey-templates-v1:';
+        const SURVEY_TEMPLATES_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
         document.addEventListener('DOMContentLoaded', bootstrap);
 
@@ -541,6 +549,7 @@
         }
 
         function initSurveyPage() {
+            restoreSurveyTemplatesFromCache();
             setupAgentPicker();
             setupTemplateNavigation();
             setupDateInput('visitDate', 'visit-date-placeholder');
@@ -596,11 +605,76 @@
                 const supported = (result.templates || []).filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
                 );
-                if (supported.length) availableSurveyTemplates = supported;
-                renderSurveyNavigation();
+                if (supported.length) {
+                    writeSurveyTemplatesCache(supported);
+                    applySurveyTemplates(supported);
+                }
             } catch (error) {
                 console.warn('Survey template metadata load failed:', error);
                 document.getElementById('template-picker-status').textContent = '暫時無法讀取線上設定，已顯示內建問卷。';
+            }
+        }
+
+        function surveyTemplatesSignature(templates) {
+            return JSON.stringify((templates || []).map((template) => ({
+                formId: String(template.formId || ''),
+                formName: String(template.formName || ''),
+                version: String(template.version || ''),
+                title: String(template.title || ''),
+                description: String(template.description || ''),
+                showOnHome: template.showOnHome !== false,
+                sortOrder: Number(template.sortOrder || 0)
+            })));
+        }
+
+        function applySurveyTemplates(templates) {
+            if (!templates.length || surveyTemplatesSignature(templates) === surveyTemplatesSignature(availableSurveyTemplates)) {
+                return;
+            }
+
+            const currentFormId = activeSurveyTemplate.formId;
+            availableSurveyTemplates = templates.slice();
+            const updatedActiveTemplate = availableSurveyTemplates.find((template) => template.formId === currentFormId);
+            const picker = document.getElementById('template-picker-view');
+
+            if (!picker.classList.contains('hidden')) {
+                renderTemplateCards();
+            } else if (updatedActiveTemplate) {
+                activeSurveyTemplate = updatedActiveTemplate;
+                document.title = `國泰人壽 - ${updatedActiveTemplate.formName}`;
+                updateSurveyTemplateDiagnostics();
+            } else {
+                renderSurveyNavigation();
+            }
+        }
+
+        function restoreSurveyTemplatesFromCache() {
+            try {
+                const raw = localStorage.getItem(SURVEY_TEMPLATES_CACHE_PREFIX + APP_CONFIG.apiUrl);
+                if (!raw) return;
+                const cached = JSON.parse(raw);
+                const savedAt = Number(cached.savedAt || 0);
+                if (!savedAt || Date.now() - savedAt > SURVEY_TEMPLATES_CACHE_MAX_AGE_MS) {
+                    localStorage.removeItem(SURVEY_TEMPLATES_CACHE_PREFIX + APP_CONFIG.apiUrl);
+                    return;
+                }
+                const supported = (Array.isArray(cached.templates) ? cached.templates : []).filter((template) =>
+                    SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
+                );
+                if (supported.length) availableSurveyTemplates = supported;
+            } catch (error) {
+                console.warn('Survey template cache read failed:', error);
+            }
+        }
+
+        function writeSurveyTemplatesCache(templates) {
+            try {
+                localStorage.setItem(
+                    SURVEY_TEMPLATES_CACHE_PREFIX + APP_CONFIG.apiUrl,
+                    JSON.stringify({ savedAt: Date.now(), templates })
+                );
+            } catch (error) {
+                console.warn('Survey template cache write failed:', error);
             }
         }
 
@@ -635,7 +709,7 @@
                     </span>
                     <span class="block text-lg font-black text-slate-800">${escapeHtml(template.formName)}</span>
                     <span class="mt-1 block text-sm font-bold ${isFamily ? 'text-[#267f9b]' : 'text-green-700'}">${escapeHtml(template.title || '')}</span>
-                    <span class="mt-3 block text-xs leading-6 text-slate-500">${escapeHtml(template.description || '')}</span>
+                    <span class="mt-3 block min-h-[4.5rem] text-xs leading-6 text-slate-500">${escapeHtml(template.description || '')}</span>
                     <span class="mt-4 inline-flex items-center gap-1 text-xs font-black ${isFamily ? 'text-[#267f7b]' : 'text-green-700'}">開始填寫 <i data-lucide="arrow-right" class="h-4 w-4"></i></span>`;
                 button.addEventListener('click', () => selectSurveyTemplate(template.formId, true));
                 list.appendChild(button);
@@ -1156,6 +1230,27 @@
             return error && error.message ? error.message : String(error || '發生錯誤。');
         }
 
+        function ensureHtml2PdfLoaded() {
+            if (window.html2pdf) return Promise.resolve(window.html2pdf);
+            if (html2PdfLoadPromise) return html2PdfLoadPromise;
+
+            html2PdfLoadPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = HTML2PDF_SCRIPT_URL;
+                script.async = true;
+                script.dataset.html2pdfLoader = 'true';
+                script.onload = () => window.html2pdf
+                    ? resolve(window.html2pdf)
+                    : reject(new Error('PDF 元件載入後無法使用。'));
+                script.onerror = () => reject(new Error('PDF 元件載入失敗，請確認網路後再試一次。'));
+                document.head.appendChild(script);
+            }).catch((error) => {
+                html2PdfLoadPromise = null;
+                throw error;
+            });
+            return html2PdfLoadPromise;
+        }
+
         async function downloadSurveyPdf() {
             const isFamily = activeSurveyTemplate.formId === 'family-protection';
             const downloadBtn = document.getElementById(isFamily ? 'family-download-btn' : 'download-btn');
@@ -1193,6 +1288,7 @@
             };
 
             try {
+                const html2pdf = await ensureHtml2PdfLoaded();
                 await html2pdf().set(options).from(element).save();
             } catch (error) {
                 alert('PDF 產生失敗：' + errorText(error));

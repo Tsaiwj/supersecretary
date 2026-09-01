@@ -528,6 +528,8 @@
         let activeSurveyTemplate = BUILT_IN_SURVEY_TEMPLATES[0];
         let teamMemberNames = [];
         let activeAgentOptionIndex = -1;
+        const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
+        const AGENT_NAMES_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
         document.addEventListener('DOMContentLoaded', bootstrap);
 
@@ -585,8 +587,11 @@
                 return;
             }
             try {
-                const result = await api('getSurveyTemplates', {});
-                if (!result || !result.ok) return;
+                const result = await apiWithRetry('getSurveyTemplates', {}, {
+                    maxAttempts: 2,
+                    baseDelayMs: 800,
+                    requireOk: true
+                });
 
                 const supported = (result.templates || []).filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
@@ -688,34 +693,120 @@
                 return;
             }
 
+            const cached = readAgentNamesCache();
+            if (cached && cached.names.length) {
+                applyAgentNames(cached.names);
+                setAgentStatus(
+                    `已先載入最近一次的 ${teamMemberNames.length} 位團隊成員，正在同步最新名單...`,
+                    'loading'
+                );
+            } else {
+                setAgentStatus('正在載入團隊成員...', 'loading');
+            }
+
             try {
-                const result = await api('getTeamMemberNames', {});
+                const result = await apiWithRetry('getTeamMemberNames', {}, {
+                    maxAttempts: 3,
+                    baseDelayMs: 900,
+                    requireOk: true,
+                    onRetry: (attempt, maxAttempts) => {
+                        setAgentStatus(`連線較慢，正在重新載入服務人員（${attempt}/${maxAttempts}）...`, 'loading');
+                    }
+                });
                 if (!result || !result.ok) {
                     throw new Error(result && result.message ? result.message : '無法載入團隊成員。');
                 }
 
-                teamMemberNames = Array.from(new Set(
-                    (result.names || []).map((name) => String(name || '').trim()).filter(Boolean)
-                ));
-
-                status.classList.remove('text-red-600');
-                status.textContent = teamMemberNames.length
+                applyAgentNames(result.names || []);
+                writeAgentNamesCache(teamMemberNames);
+                setAgentStatus(teamMemberNames.length
                     ? `已載入 ${teamMemberNames.length} 位團隊成員；點擊欄位可查看完整名單。`
-                    : '目前沒有團隊成員資料。';
-                populateFamilyAgentSelect();
-                familyStatus.classList.remove('text-red-600');
-                familyStatus.textContent = teamMemberNames.length
-                    ? `已載入 ${teamMemberNames.length} 位團隊成員。`
-                    : '目前沒有團隊成員資料。';
-
-                if (document.activeElement === document.getElementById('agent')) {
-                    renderAgentOptions('');
-                }
+                    : '目前沒有團隊成員資料。', 'success');
             } catch (error) {
-                status.textContent = errorText(error);
-                status.classList.add('text-red-600');
-                familyStatus.textContent = errorText(error);
-                familyStatus.classList.add('text-red-600');
+                console.warn('Team member names load failed after retries:', error);
+                if (cached && cached.names.length) {
+                    setAgentStatus(
+                        `暫時無法同步最新名單，已顯示最近一次的 ${teamMemberNames.length} 位團隊成員。`,
+                        'warning'
+                    );
+                    return;
+                }
+                setAgentLoadFailure();
+            }
+        }
+
+        function normalizeAgentNames(names) {
+            return Array.from(new Set(
+                (Array.isArray(names) ? names : [])
+                    .map((name) => String(name || '').trim())
+                    .filter(Boolean)
+            ));
+        }
+
+        function applyAgentNames(names) {
+            teamMemberNames = normalizeAgentNames(names);
+            populateFamilyAgentSelect();
+            if (document.activeElement === document.getElementById('agent')) {
+                renderAgentOptions('');
+            }
+        }
+
+        function setAgentStatus(message, tone) {
+            const status = document.getElementById('agent-status');
+            const familyStatus = document.getElementById('family-agent-status');
+            const toneClass = tone === 'success'
+                ? 'text-green-700'
+                : tone === 'warning'
+                    ? 'text-amber-600'
+                    : tone === 'error'
+                        ? 'text-red-600'
+                        : 'text-gray-500';
+            [status, familyStatus].forEach((element) => {
+                element.classList.remove('text-red-600', 'text-amber-600', 'text-green-700', 'text-gray-500', 'text-slate-500');
+                element.classList.add(toneClass);
+                element.textContent = message;
+            });
+        }
+
+        function setAgentLoadFailure() {
+            const message = '服務人員名單暫時無法載入，請確認網路後重新載入。';
+            const buttonHtml = '<button type="button" data-retry-agent-names class="ml-1 font-bold underline">重新載入</button>';
+            ['agent-status', 'family-agent-status'].forEach((id) => {
+                const element = document.getElementById(id);
+                element.classList.remove('text-amber-600', 'text-green-700', 'text-gray-500', 'text-slate-500');
+                element.classList.add('text-red-600');
+                element.innerHTML = escapeHtml(message) + buttonHtml;
+            });
+            document.querySelectorAll('[data-retry-agent-names]').forEach((button) => {
+                button.addEventListener('click', loadAgentNames, { once: true });
+            });
+        }
+
+        function readAgentNamesCache() {
+            try {
+                const raw = localStorage.getItem(AGENT_NAMES_CACHE_PREFIX + APP_CONFIG.apiUrl);
+                if (!raw) return null;
+                const cached = JSON.parse(raw);
+                const savedAt = Number(cached.savedAt || 0);
+                if (!savedAt || Date.now() - savedAt > AGENT_NAMES_CACHE_MAX_AGE_MS) {
+                    localStorage.removeItem(AGENT_NAMES_CACHE_PREFIX + APP_CONFIG.apiUrl);
+                    return null;
+                }
+                return { savedAt, names: normalizeAgentNames(cached.names) };
+            } catch (error) {
+                console.warn('Team member cache read failed:', error);
+                return null;
+            }
+        }
+
+        function writeAgentNamesCache(names) {
+            try {
+                localStorage.setItem(
+                    AGENT_NAMES_CACHE_PREFIX + APP_CONFIG.apiUrl,
+                    JSON.stringify({ savedAt: Date.now(), names: normalizeAgentNames(names) })
+                );
+            } catch (error) {
+                console.warn('Team member cache write failed:', error);
             }
         }
 
@@ -1016,6 +1107,36 @@
                     if (script.parentNode) script.parentNode.removeChild(script);
                 }
             });
+        }
+
+        async function apiWithRetry(action, payload, options = {}) {
+            const maxAttempts = Math.max(1, Number(options.maxAttempts) || 3);
+            const baseDelayMs = Math.max(0, Number(options.baseDelayMs) || 750);
+            let lastError = null;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+                if (attempt > 1) {
+                    if (typeof options.onRetry === 'function') {
+                        options.onRetry(attempt, maxAttempts, lastError);
+                    }
+                    await delay(baseDelayMs * (attempt - 1));
+                }
+                try {
+                    const result = await api(action, payload);
+                    if (options.requireOk && (!result || !result.ok)) {
+                        throw new Error(result && result.message ? result.message : 'API 暫時無法取得資料。');
+                    }
+                    return result;
+                } catch (error) {
+                    lastError = error;
+                    if (typeof navigator !== 'undefined' && navigator.onLine === false) break;
+                }
+            }
+            throw lastError || new Error('API 暫時無法連線。');
+        }
+
+        function delay(milliseconds) {
+            return new Promise((resolve) => setTimeout(resolve, milliseconds));
         }
 
         function isApiConfigured() {

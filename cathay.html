@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>國泰人壽 - 問卷中心</title>
-    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="preconnect" href="https://i.ibb.co" crossorigin>
-    <!-- 引入 Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 預先編譯的本地版面樣式，避免開頁時等待 Tailwind CDN 即時運算 -->
+    <link rel="stylesheet" href="./tailwind.generated.css?v=3.6.6">
     <!-- 引入 Lucide Icons -->
     <script async src="https://unpkg.com/lucide@latest" onload="window.lucide && window.lucide.createIcons()"></script>
     <style>
@@ -46,7 +45,7 @@
         <header class="relative overflow-hidden bg-gradient-to-br from-[#2f9791] to-[#277f9d] px-6 py-8 text-white sm:px-10">
             <div class="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-white/10"></div>
             <div class="relative flex items-center gap-3">
-                <img src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-12 w-12 rounded-lg object-contain" />
+                <img loading="lazy" decoding="async" src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-12 w-12 rounded-lg object-contain" />
                 <div>
                     <p class="text-xs font-semibold tracking-[.28em] text-white/80">CATHAY LIFE</p>
                     <h1 class="mt-1 text-2xl font-black tracking-wide sm:text-3xl">問卷中心</h1>
@@ -76,6 +75,8 @@
                 <div class="bg-green-50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
                     <div class="flex items-center space-x-3">
                         <img 
+                            loading="lazy"
+                            decoding="async"
                             src="https://i.ibb.co/21Q7LfpT/image.png" 
                             alt="國泰人壽 Logo" 
                             class="w-10 h-10 sm:w-11 sm:h-11 object-contain flex-shrink-0"
@@ -383,17 +384,17 @@
             <header class="relative overflow-hidden bg-gradient-to-br from-[#e9f5f7] via-white to-[#dff1f1] px-5 pb-7 pt-5 sm:px-9 sm:pb-9">
                 <div class="relative flex items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <img src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-11 w-11 rounded-lg object-contain" />
+                        <img loading="lazy" decoding="async" src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-11 w-11 rounded-lg object-contain" />
                         <div>
                             <p class="text-lg font-black tracking-wider text-[#207e78]">國泰人壽</p>
                             <p class="text-[9px] font-semibold tracking-[.18em] text-[#559b98]">CATHAY LIFE INSURANCE</p>
                         </div>
                     </div>
-                    <img src="https://i.ibb.co/XxZbJvjp/image.jpg" alt="人生進度道路插圖" class="h-auto w-28 rounded-xl border border-[#c7e2e2] object-contain shadow-sm sm:w-36" />
+                    <img loading="lazy" decoding="async" src="https://i.ibb.co/XxZbJvjp/image.jpg" alt="人生進度道路插圖" class="h-auto w-28 rounded-xl border border-[#c7e2e2] object-contain shadow-sm sm:w-36" />
                 </div>
                 <div class="relative mt-7 sm:mt-9">
                     <h1 class="sr-only">人生有進度，保障要同步</h1>
-                    <img src="https://i.ibb.co/fVrHfSgf/image.jpg" alt="人生有進度，保障要同步" class="h-auto w-full max-w-[520px] rounded-xl object-contain" />
+                    <img loading="lazy" decoding="async" src="https://i.ibb.co/fVrHfSgf/image.jpg" alt="人生有進度，保障要同步" class="h-auto w-full max-w-[520px] rounded-xl object-contain" />
                     <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600">隨著人生不同階段的轉變，家庭責任與保障需求也會有所不同，我們特別安排專人為您進行家庭保障健檢，讓保障跟上人生每個重要階段。</p>
                 </div>
             </header>
@@ -534,12 +535,18 @@
         let teamMemberNames = [];
         let activeAgentOptionIndex = -1;
         let html2PdfLoadPromise = null;
+        let surveySubmissionInProgress = false;
         const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
         const AGENT_NAMES_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
         const SURVEY_TEMPLATES_CACHE_PREFIX = 'survey-templates-v1:';
         const SURVEY_TEMPLATES_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
         document.addEventListener('DOMContentLoaded', bootstrap);
+        window.addEventListener('beforeunload', (event) => {
+            if (!surveySubmissionInProgress) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
 
         function bootstrap() {
             if (typeof lucide !== 'undefined') {
@@ -554,8 +561,7 @@
             setupTemplateNavigation();
             setupDateInput('visitDate', 'visit-date-placeholder');
             setupDateInput('family-visit-date', 'family-visit-date-placeholder');
-            loadAgentNames();
-            loadSurveyTemplates();
+            loadSurveyPageBootstrap();
 
             const otherCheckbox = document.getElementById('other');
             const otherTextInput = document.getElementById('otherText');
@@ -612,6 +618,54 @@
             } catch (error) {
                 console.warn('Survey template metadata load failed:', error);
                 document.getElementById('template-picker-status').textContent = '暫時無法讀取線上設定，已顯示內建問卷。';
+            }
+        }
+
+        async function loadSurveyPageBootstrap() {
+            const cachedAgentNames = readAgentNamesCache();
+            const hasCachedAgentNames = Boolean(cachedAgentNames && cachedAgentNames.names.length);
+            if (hasCachedAgentNames) {
+                applyAgentNames(cachedAgentNames.names);
+                setAgentStatus(`已載入 ${teamMemberNames.length} 位服務人員。`, 'success');
+            } else {
+                setAgentStatus('正在載入服務人員...', 'loading');
+            }
+
+            if (!isApiConfigured()) {
+                setAgentStatus('尚未設定 Apps Script Web App URL。', 'error');
+                return;
+            }
+
+            try {
+                const result = await apiWithRetry('getSurveyPageBootstrap', {}, {
+                    maxAttempts: hasCachedAgentNames ? 1 : 2,
+                    baseDelayMs: 700,
+                    requireOk: true,
+                    onRetry: hasCachedAgentNames ? null : () => {
+                        setAgentStatus('連線較慢，正在繼續載入服務人員...', 'loading');
+                    }
+                });
+
+                applyAgentNames(result.names || []);
+                writeAgentNamesCache(teamMemberNames);
+                setAgentStatus(teamMemberNames.length
+                    ? `已載入 ${teamMemberNames.length} 位服務人員。`
+                    : '目前沒有服務人員資料。', 'success');
+
+                const supported = (result.templates || []).filter((template) =>
+                    SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
+                );
+                if (supported.length) {
+                    writeSurveyTemplatesCache(supported);
+                    applySurveyTemplates(supported);
+                }
+            } catch (error) {
+                console.warn('Survey page bootstrap load failed:', error);
+                if (hasCachedAgentNames) {
+                    setAgentStatus(`已載入 ${teamMemberNames.length} 位服務人員（最近一次名單）。`, 'warning');
+                } else {
+                    setAgentLoadFailure();
+                }
             }
         }
 
@@ -770,21 +824,18 @@
             const cached = readAgentNamesCache();
             if (cached && cached.names.length) {
                 applyAgentNames(cached.names);
-                setAgentStatus(
-                    `已先載入最近一次的 ${teamMemberNames.length} 位團隊成員，正在同步最新名單...`,
-                    'loading'
-                );
+                setAgentStatus(`已載入 ${teamMemberNames.length} 位服務人員。`, 'success');
             } else {
-                setAgentStatus('正在載入團隊成員...', 'loading');
+                setAgentStatus('正在載入服務人員...', 'loading');
             }
 
             try {
                 const result = await apiWithRetry('getTeamMemberNames', {}, {
-                    maxAttempts: 3,
+                    maxAttempts: cached ? 1 : 2,
                     baseDelayMs: 900,
                     requireOk: true,
-                    onRetry: (attempt, maxAttempts) => {
-                        setAgentStatus(`連線較慢，正在重新載入服務人員（${attempt}/${maxAttempts}）...`, 'loading');
+                    onRetry: cached ? null : () => {
+                        setAgentStatus('連線較慢，正在繼續載入服務人員...', 'loading');
                     }
                 });
                 if (!result || !result.ok) {
@@ -794,13 +845,13 @@
                 applyAgentNames(result.names || []);
                 writeAgentNamesCache(teamMemberNames);
                 setAgentStatus(teamMemberNames.length
-                    ? `已載入 ${teamMemberNames.length} 位團隊成員；點擊欄位可查看完整名單。`
-                    : '目前沒有團隊成員資料。', 'success');
+                    ? `已載入 ${teamMemberNames.length} 位服務人員。`
+                    : '目前沒有服務人員資料。', 'success');
             } catch (error) {
                 console.warn('Team member names load failed after retries:', error);
                 if (cached && cached.names.length) {
                     setAgentStatus(
-                        `暫時無法同步最新名單，已顯示最近一次的 ${teamMemberNames.length} 位團隊成員。`,
+                        `已載入 ${teamMemberNames.length} 位服務人員（最近一次名單）。`,
                         'warning'
                     );
                     return;
@@ -1020,7 +1071,8 @@
 
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-75', 'cursor-wait');
-            submitBtn.textContent = '資料送出中...';
+            submitBtn.textContent = '資料送出中，請稍候並請勿關閉此頁面…';
+            surveySubmissionInProgress = true;
 
             try {
                 const response = await fetch(APP_CONFIG.apiUrl, {
@@ -1055,6 +1107,7 @@
                 console.error('Survey submit error:', error);
                 alert(errorText(error));
             } finally {
+                surveySubmissionInProgress = false;
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-75', 'cursor-wait');
                 submitBtn.textContent = '完成填寫並送出';

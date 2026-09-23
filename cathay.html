@@ -11,6 +11,27 @@
     <!-- 引入 Lucide Icons -->
     <script async src="https://unpkg.com/lucide@latest" onload="window.lucide && window.lucide.createIcons()"></script>
     <style>
+        .template-entry { display: flex; flex-direction: column; min-width: 0; }
+        .template-entry-title, .template-entry-cta { font-size: 1.125rem; line-height: 1.5; }
+        .template-entry-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 52px;
+            margin-top: auto;
+            padding: 12px 10px;
+            border: 1px solid #15803d;
+            border-radius: 12px;
+            background: #15803d;
+            color: #fff;
+            font-weight: 900;
+        }
+        .template-entry--family .template-entry-cta { background: #267f7b; border-color: #267f7b; }
+        .template-entry:hover .template-entry-cta { filter: brightness(.94); }
+        .template-entry:focus-visible { outline: 3px solid #267f7b; outline-offset: 4px; }
+        .template-entry-finger { flex-shrink: 0; font-size: 1.25rem; }
         .survey-choice:has(input:checked) { border-color: #319691; background: #eaf8f6; box-shadow: 0 0 0 3px rgba(49,150,145,.14); }
         .survey-choice:has(input:checked) .choice-dot { background: #319691; border-color: #319691; box-shadow: inset 0 0 0 4px #fff; }
         .family-check:has(input:checked) { border-color: #319691; background: #eaf8f6; }
@@ -51,7 +72,7 @@
                     <h1 class="mt-1 text-2xl font-black tracking-wide sm:text-3xl">問卷中心</h1>
                 </div>
             </div>
-            <p class="relative mt-5 max-w-xl text-sm leading-7 text-white/90">請選擇本次要填寫的問卷。每一份問卷會分開保存名稱、版本與回答明細。</p>
+            <p class="relative mt-5 max-w-xl text-sm leading-7 text-white/90">請選擇本次要填寫的問卷。每一份問卷會分開保存名稱與回答明細。</p>
         </header>
         <section class="p-5 sm:p-8">
             <div id="template-card-list" class="grid gap-4 sm:grid-cols-2"></div>
@@ -514,20 +535,14 @@
             {
                 formId: 'policy-check',
                 formName: '保單健檢',
-                version: '1',
                 title: '國泰人壽保戶權益服務問卷',
-                description: '確認保單資料與常用保戶服務。',
-                showOnHome: true,
-                sortOrder: 1
+                description: '感謝您一路以來對我們的支持與信任。'
             },
             {
                 formId: 'family-protection',
                 formName: '家庭保障',
-                version: '2',
                 title: '人生有進度，保障要同步',
-                description: '從人生階段、家庭責任與保障需求完成年度健檢。',
-                showOnHome: true,
-                sortOrder: 2
+                description: '隨著人生不同階段的轉變，家庭責任與保障需求也會有所不同。'
             }
         ];
         let availableSurveyTemplates = BUILT_IN_SURVEY_TEMPLATES.slice();
@@ -538,7 +553,7 @@
         let surveySubmissionInProgress = false;
         const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
         const AGENT_NAMES_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-        const SURVEY_TEMPLATES_CACHE_PREFIX = 'survey-templates-v1:';
+        const SURVEY_TEMPLATES_CACHE_PREFIX = 'survey-templates-v2:';
         const SURVEY_TEMPLATES_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
         document.addEventListener('DOMContentLoaded', bootstrap);
@@ -669,19 +684,30 @@
             }
         }
 
+        function normalizeSurveyTemplates(templates) {
+            const incoming = Array.isArray(templates) ? templates : [];
+            return BUILT_IN_SURVEY_TEMPLATES.map((builtIn) => {
+                const remote = incoming.find((template) => template && template.formId === builtIn.formId) || {};
+                return {
+                    formId: builtIn.formId,
+                    formName: String(remote.formName || builtIn.formName),
+                    title: String(remote.title || builtIn.title),
+                    description: builtIn.description
+                };
+            });
+        }
+
         function surveyTemplatesSignature(templates) {
             return JSON.stringify((templates || []).map((template) => ({
                 formId: String(template.formId || ''),
                 formName: String(template.formName || ''),
-                version: String(template.version || ''),
                 title: String(template.title || ''),
-                description: String(template.description || ''),
-                showOnHome: template.showOnHome !== false,
-                sortOrder: Number(template.sortOrder || 0)
+                description: String(template.description || '')
             })));
         }
 
         function applySurveyTemplates(templates) {
+            templates = normalizeSurveyTemplates(templates);
             if (!templates.length || surveyTemplatesSignature(templates) === surveyTemplatesSignature(availableSurveyTemplates)) {
                 return;
             }
@@ -715,7 +741,7 @@
                 const supported = (Array.isArray(cached.templates) ? cached.templates : []).filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
                 );
-                if (supported.length) availableSurveyTemplates = supported;
+                if (supported.length) availableSurveyTemplates = normalizeSurveyTemplates(supported);
             } catch (error) {
                 console.warn('Survey template cache read failed:', error);
             }
@@ -725,7 +751,7 @@
             try {
                 localStorage.setItem(
                     SURVEY_TEMPLATES_CACHE_PREFIX + APP_CONFIG.apiUrl,
-                    JSON.stringify({ savedAt: Date.now(), templates })
+                    JSON.stringify({ savedAt: Date.now(), templates: normalizeSurveyTemplates(templates) })
                 );
             } catch (error) {
                 console.warn('Survey template cache write failed:', error);
@@ -740,37 +766,33 @@
                 return;
             }
 
-            const visibleTemplates = availableSurveyTemplates.filter((template) => template.showOnHome !== false);
-            if (visibleTemplates.length === 1) {
-                selectSurveyTemplate(visibleTemplates[0].formId, false);
-                return;
-            }
             showTemplatePicker(false);
         }
 
         function renderTemplateCards() {
             const list = document.getElementById('template-card-list');
-            const visibleTemplates = availableSurveyTemplates.filter((template) => template.showOnHome !== false);
+            const visibleTemplates = availableSurveyTemplates;
             list.innerHTML = '';
             visibleTemplates.forEach((template) => {
                 const isFamily = template.formId === 'family-protection';
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'group rounded-2xl border-2 border-white bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#69bbb5] hover:shadow-lg';
+                button.className = 'template-entry group rounded-2xl border-2 border-white bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#69bbb5] hover:shadow-lg' + (isFamily ? ' template-entry--family' : '');
+                button.setAttribute('aria-label', `我要填寫此問卷：${template.formName}`);
                 button.innerHTML = `
                     <span class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ${isFamily ? 'bg-[#e5f5f3] text-[#267f7b]' : 'bg-green-50 text-green-700'}">
                         <i data-lucide="${isFamily ? 'house-heart' : 'clipboard-check'}" class="h-7 w-7"></i>
                     </span>
-                    <span class="block text-lg font-black text-slate-800">${escapeHtml(template.formName)}</span>
+                    <span class="template-entry-title block text-lg font-black text-slate-800">${escapeHtml(template.formName)}</span>
                     <span class="mt-1 block text-sm font-bold ${isFamily ? 'text-[#267f9b]' : 'text-green-700'}">${escapeHtml(template.title || '')}</span>
                     <span class="mt-3 block min-h-[4.5rem] text-xs leading-6 text-slate-500">${escapeHtml(template.description || '')}</span>
-                    <span class="mt-4 inline-flex items-center gap-1 text-xs font-black ${isFamily ? 'text-[#267f7b]' : 'text-green-700'}">開始填寫 <i data-lucide="arrow-right" class="h-4 w-4"></i></span>`;
+                    <span class="template-entry-cta"><span class="template-entry-finger" aria-hidden="true">👉</span><span>我要填寫此問卷</span></span>`;
                 button.addEventListener('click', () => selectSurveyTemplate(template.formId, true));
                 list.appendChild(button);
             });
             document.getElementById('template-picker-status').textContent = visibleTemplates.length
                 ? `目前共有 ${visibleTemplates.length} 份問卷可填寫。`
-                : '目前沒有設定為首頁顯示的問卷。';
+                : '目前沒有可填寫的問卷。';
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
@@ -807,7 +829,6 @@
         function updateSurveyTemplateDiagnostics() {
             document.documentElement.dataset.surveyFormId = activeSurveyTemplate.formId || '';
             document.documentElement.dataset.surveyFormName = activeSurveyTemplate.formName || '';
-            document.documentElement.dataset.surveyFormVersion = activeSurveyTemplate.version || '';
         }
 
         async function loadAgentNames() {
@@ -1122,7 +1143,6 @@
                 source: 'survey-web',
                 formId: activeSurveyTemplate.formId,
                 formName: activeSurveyTemplate.formName,
-                formVersion: activeSurveyTemplate.version,
                 basicInfo: {
                     job: document.getElementById('job').checked,
                     phone: document.getElementById('chk-phone').checked,
@@ -1162,7 +1182,6 @@
                 source: 'survey-web',
                 formId: activeSurveyTemplate.formId,
                 formName: activeSurveyTemplate.formName,
-                formVersion: activeSurveyTemplate.version,
                 familyAnswers: {
                     lastReview: checkedValue('input[name="family-last-review"]'),
                     concerns: checkedValues('[data-family-concern]'),

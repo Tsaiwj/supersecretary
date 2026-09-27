@@ -246,26 +246,10 @@
                                     <input type="tel" id="phone" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 p-2 border" placeholder="請輸入手機號碼" />
                                 </div>
                                 <div>
-                                    <label class="block text-gray-700 mb-1">服務人員</label>
-                                    <div id="agent-picker" class="relative">
-                                        <input
-                                            type="text"
-                                            id="agent"
-                                            autocomplete="off"
-                                            role="combobox"
-                                            aria-autocomplete="list"
-                                            aria-expanded="false"
-                                            aria-controls="agent-options-panel"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 p-2 pr-9 border bg-white"
-                                            placeholder="請選擇或輸入服務人員"
-                                        />
-                                        <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
-                                        <div
-                                            id="agent-options-panel"
-                                            role="listbox"
-                                            class="hidden absolute left-0 right-0 z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl"
-                                        ></div>
-                                    </div>
+                                    <label for="agent" class="block text-gray-700 mb-1">服務人員</label>
+                                    <select id="agent" disabled class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 p-2 border bg-white">
+                                        <option value="">正在載入團隊成員...</option>
+                                    </select>
                                     <p id="agent-status" class="text-[11px] text-gray-500 mt-1">正在載入團隊成員...</p>
                                 </div>
                                 <div>
@@ -493,7 +477,7 @@
                     <div class="grid gap-4 text-sm sm:grid-cols-2">
                         <div><label class="mb-1 block font-bold text-slate-700">姓名</label><input id="family-name" type="text" class="w-full rounded-lg border border-slate-300 p-2.5 focus:border-[#319691] focus:outline-none" placeholder="請輸入您的姓名" /></div>
                         <div><label class="mb-1 block font-bold text-slate-700">手機</label><input id="family-phone" type="tel" class="w-full rounded-lg border border-slate-300 p-2.5 focus:border-[#319691] focus:outline-none" placeholder="請輸入手機號碼" /></div>
-                        <div><label class="mb-1 block font-bold text-slate-700">拜訪人員</label><select id="family-agent" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 focus:border-[#319691] focus:outline-none"><option value="">正在載入團隊成員...</option></select><p id="family-agent-status" class="mt-1 text-[11px] text-slate-500"></p></div>
+                        <div><label for="family-agent" class="mb-1 block font-bold text-slate-700">拜訪人員</label><select id="family-agent" disabled class="w-full rounded-lg border border-slate-300 bg-white p-2.5 focus:border-[#319691] focus:outline-none"><option value="">正在載入團隊成員...</option></select><p id="family-agent-status" class="mt-1 text-[11px] text-slate-500"></p></div>
                         <div>
                             <label class="mb-1 block font-bold text-slate-700">拜訪日期</label>
                             <div class="relative">
@@ -548,7 +532,6 @@
         let availableSurveyTemplates = BUILT_IN_SURVEY_TEMPLATES.slice();
         let activeSurveyTemplate = BUILT_IN_SURVEY_TEMPLATES[0];
         let teamMemberNames = [];
-        let activeAgentOptionIndex = -1;
         let html2PdfLoadPromise = null;
         let surveySubmissionInProgress = false;
         const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
@@ -572,7 +555,6 @@
 
         function initSurveyPage() {
             restoreSurveyTemplatesFromCache();
-            setupAgentPicker();
             setupTemplateNavigation();
             setupDateInput('visitDate', 'visit-date-placeholder');
             setupDateInput('family-visit-date', 'family-visit-date-placeholder');
@@ -891,10 +873,7 @@
 
         function applyAgentNames(names) {
             teamMemberNames = normalizeAgentNames(names);
-            populateFamilyAgentSelect();
-            if (document.activeElement === document.getElementById('agent')) {
-                renderAgentOptions('');
-            }
+            populateAgentSelects();
         }
 
         function setAgentStatus(message, tone) {
@@ -915,6 +894,7 @@
         }
 
         function setAgentLoadFailure() {
+            if (!teamMemberNames.length) populateAgentSelects('名單載入失敗，請按下方重新載入');
             const message = '服務人員名單暫時無法載入，請確認網路後重新載入。';
             const buttonHtml = '<button type="button" data-retry-agent-names class="ml-1 font-bold underline">重新載入</button>';
             ['agent-status', 'family-agent-status'].forEach((id) => {
@@ -956,126 +936,30 @@
             }
         }
 
-        function populateFamilyAgentSelect() {
-            const select = document.getElementById('family-agent');
-            const currentValue = select.value;
-            select.innerHTML = '<option value="">請選擇拜訪人員</option>';
-            teamMemberNames.forEach((name) => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                select.appendChild(option);
-            });
-            if (teamMemberNames.includes(currentValue)) select.value = currentValue;
-        }
-
-        function setupAgentPicker() {
-            const picker = document.getElementById('agent-picker');
-            const input = document.getElementById('agent');
-
-            input.addEventListener('focus', () => renderAgentOptions(''));
-            input.addEventListener('click', () => renderAgentOptions(''));
-            input.addEventListener('input', () => renderAgentOptions(input.value));
-            input.addEventListener('keydown', handleAgentPickerKeydown);
-            input.addEventListener('blur', () => {
-                setTimeout(() => {
-                    if (!picker.contains(document.activeElement)) closeAgentOptions();
-                }, 120);
-            });
-
-            document.addEventListener('pointerdown', (event) => {
-                if (!picker.contains(event.target)) closeAgentOptions();
-            });
-        }
-
-        function renderAgentOptions(filterText) {
-            const input = document.getElementById('agent');
-            const panel = document.getElementById('agent-options-panel');
-            const keyword = String(filterText || '').trim().toLocaleLowerCase('zh-TW');
-            const filteredNames = keyword
-                ? teamMemberNames.filter((name) => name.toLocaleLowerCase('zh-TW').includes(keyword))
-                : teamMemberNames.slice();
-
-            panel.innerHTML = '';
-            activeAgentOptionIndex = -1;
-
-            if (!teamMemberNames.length) {
-                closeAgentOptions();
-                return;
-            }
-
-            if (!filteredNames.length) {
-                const empty = document.createElement('div');
-                empty.className = 'px-3 py-3 text-sm text-gray-500';
-                empty.textContent = '沒有符合的團隊成員；仍可直接輸入姓名。';
-                panel.appendChild(empty);
-            } else {
-                filteredNames.forEach((name) => {
-                    const option = document.createElement('button');
-                    option.type = 'button';
-                    option.role = 'option';
-                    option.dataset.agentOption = name;
-                    option.className = 'block w-full border-b border-gray-100 px-3 py-3 text-left text-sm text-gray-800 last:border-b-0 hover:bg-green-50 focus:bg-green-50 focus:outline-none';
+        function populateAgentSelects(emptyMessage) {
+            ['agent', 'family-agent'].forEach((id) => {
+                const select = document.getElementById(id);
+                const currentValue = select.value;
+                select.replaceChildren();
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = teamMemberNames.length
+                    ? (id === 'agent' ? '請選擇服務人員' : '請選擇拜訪人員')
+                    : (emptyMessage || '目前沒有服務人員資料');
+                select.appendChild(placeholder);
+                teamMemberNames.forEach((name) => {
+                    const option = document.createElement('option');
+                    option.value = name;
                     option.textContent = name;
-                    option.addEventListener('pointerdown', (event) => event.preventDefault());
-                    option.addEventListener('click', () => selectAgentName(name));
-                    panel.appendChild(option);
+                    select.appendChild(option);
                 });
-            }
-
-            panel.classList.remove('hidden');
-            input.setAttribute('aria-expanded', 'true');
-        }
-
-        function selectAgentName(name) {
-            const input = document.getElementById('agent');
-            input.value = name;
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-            closeAgentOptions();
-            input.focus();
-        }
-
-        function closeAgentOptions() {
-            const input = document.getElementById('agent');
-            const panel = document.getElementById('agent-options-panel');
-            panel.classList.add('hidden');
-            input.setAttribute('aria-expanded', 'false');
-            activeAgentOptionIndex = -1;
-        }
-
-        function handleAgentPickerKeydown(event) {
-            const panel = document.getElementById('agent-options-panel');
-            const options = Array.from(panel.querySelectorAll('[data-agent-option]'));
-
-            if (event.key === 'Escape') {
-                closeAgentOptions();
-                return;
-            }
-            if (!options.length || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'Enter')) {
-                return;
-            }
-            if (event.key === 'Enter') {
-                if (activeAgentOptionIndex >= 0) {
-                    event.preventDefault();
-                    selectAgentName(options[activeAgentOptionIndex].dataset.agentOption);
-                }
-                return;
-            }
-
-            event.preventDefault();
-            const direction = event.key === 'ArrowDown' ? 1 : -1;
-            activeAgentOptionIndex = activeAgentOptionIndex < 0
-                ? (direction > 0 ? 0 : options.length - 1)
-                : (activeAgentOptionIndex + direction + options.length) % options.length;
-
-            options.forEach((option, index) => {
-                option.classList.toggle('bg-green-50', index === activeAgentOptionIndex);
-                option.setAttribute('aria-selected', index === activeAgentOptionIndex ? 'true' : 'false');
+                select.disabled = !teamMemberNames.length;
+                if (teamMemberNames.includes(currentValue)) select.value = currentValue;
             });
-            options[activeAgentOptionIndex].scrollIntoView({ block: 'nearest' });
         }
 
         async function submitSurvey() {
+            if (surveySubmissionInProgress) return;
             const submitBtn = document.getElementById(
                 activeSurveyTemplate.formId === 'family-protection' ? 'family-submit-btn' : 'submit-btn'
             );
@@ -1215,7 +1099,8 @@
             }
             if (!data.name) return '請填寫客戶姓名。';
             if (!data.phone) return '請填寫客戶手機。';
-            if (!data.agent) return '請選擇或輸入服務人員。';
+            if (!data.agent) return '請從名單選擇服務人員。';
+            if (!teamMemberNames.includes(data.agent)) return '服務人員名單已更新，請重新選擇。';
             if (!data.visitDate) return '請填寫拜訪日期。';
             return '';
         }

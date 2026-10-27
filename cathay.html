@@ -58,6 +58,17 @@
             cursor: pointer;
         }
     </style>
+    <style>
+        .meili-page{max-width:800px;margin:24px auto;background:linear-gradient(#fff 28%,#edf8fa 76%,#c7e5ea);color:#404747;border-radius:20px;overflow:hidden;box-shadow:0 15px 45px #245d6520}
+        .meili-nav{padding:12px 22px;display:flex;justify-content:space-between;align-items:center;background:#fff;color:#247a68;font-size:13px}.meili-nav button{text-decoration:underline}
+        .meili-hero{width:100%;height:auto}.meili-mobile-intro{display:none}.meili-section{padding:20px 28px 8px}.meili-title{display:flex;align-items:flex-start;gap:10px;color:#29a681;font-weight:900;font-size:24px;line-height:1.45;margin-bottom:14px}.meili-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:38px;height:38px;border-radius:50%;background:linear-gradient(#b6d56f,#35b58a);color:#fff;font:900 28px/1 sans-serif}.meili-note{display:block;font-size:14px;font-weight:500;color:#626967;margin-top:3px}
+        .meili-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.meili-card{border:2px solid #c7dfaa;border-radius:22px;background:#fff;display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 9px;cursor:pointer;transition:background .15s,border-color .15s}.meili-card:has(input:checked){background:#edf9e8;border-color:#249e72;box-shadow:0 0 0 2px #249e721a}.meili-card:has(input:disabled){opacity:.65}.meili-card img{height:88px;width:100px;object-fit:contain;margin-bottom:12px}.meili-card strong{color:#249b70;font-size:23px}.meili-card span{font-size:15px;line-height:1.6;margin:7px 0 13px;flex:1}.meili-card input,.meili-agreements input{width:20px;height:20px;accent-color:#289c77;flex:none}.meili-count{font-size:13px;color:#28725d;margin:9px 0;min-height:22px}
+        .meili-balance{background:white;border:2px solid #c7dfaa;border-radius:22px;padding:20px}.meili-ends{display:flex;justify-content:space-between;gap:20px;text-align:center}.meili-end{flex:1}.meili-end img{width:140px;height:128px;object-fit:contain;margin:auto}.meili-end h3{font-size:22px;font-weight:800;color:#469e90}.meili-end:last-child h3{color:#ee797f}.meili-end p{font-size:14px;line-height:1.65;margin-top:5px}.meili-scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;position:relative;margin-top:22px}.meili-scale:before{content:'';position:absolute;top:11px;left:10%;right:10%;height:3px;background:linear-gradient(90deg,#54a896,#f77782)}.meili-scale label{display:flex;align-items:center;flex-direction:column;text-align:center;gap:8px;cursor:pointer;font-size:12px;position:relative;line-height:1.4}.meili-scale input{width:25px;height:25px;accent-color:#289c77;background:#fff;cursor:pointer}.meili-scale label:has(input:checked){font-weight:800;color:#147958}
+        .meili-contact{margin:25px 28px;background:#fff;padding:22px;border-radius:22px;border:1px solid #c7dfaa}.meili-agreements{display:grid;gap:12px;margin-bottom:20px;font-size:14px}.meili-agreements label{display:flex;gap:9px;align-items:flex-start}.meili-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.meili-fields label{display:block;font-size:14px;font-weight:700;margin-bottom:5px}.meili-fields input,.meili-fields select{width:100%;max-width:100%;min-width:0;background:#fff;border:1px solid #bfd6d0;border-radius:9px;padding:10px;box-sizing:border-box;font-size:16px;min-height:44px}.meili-fields>div{min-width:0}.meili-fields p{font-size:12px;margin-top:5px}.meili-privacy{font-size:12px;line-height:1.7;color:#65746f;margin-top:20px}.meili-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;background:white;padding:20px}.meili-actions button{background:#249c72;color:#fff;border-radius:28px;padding:13px 26px;font-size:16px;font-weight:700}.meili-actions button:last-child{background:#267e83}.meili-info{margin:22px 28px 28px;border:1px solid #bedda5;border-radius:16px;background:white;overflow:hidden}.meili-info summary{padding:16px;cursor:pointer;font-weight:700;color:#287760}.meili-info p{font-size:12px;line-height:1.7;padding:0 16px 15px}.meili-info img{width:100%;height:auto}.meili-page :focus-visible{outline:3px solid #1b7369;outline-offset:4px}
+        @media(max-width:600px){.meili-page{margin:10px auto;border-radius:12px}.meili-section{padding:18px 15px 3px}.meili-title{font-size:21px;gap:8px}.meili-number{width:33px;height:33px;font-size:25px}.meili-note{font-size:13px}.meili-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.meili-card{padding:15px 10px}.meili-card strong{font-size:22px}.meili-card span{font-size:14px}.meili-mobile-intro{display:block;padding:13px 18px 0;color:#326f67;font-size:14px;line-height:1.8}.meili-balance{padding:16px 10px}.meili-ends{gap:8px}.meili-end img{width:115px;height:105px}.meili-end h3{font-size:18px}.meili-end p{font-size:12px}.meili-scale label{font-size:11px}.meili-contact{margin:20px 15px;padding:18px 14px}.meili-fields{grid-template-columns:1fr}.meili-info{margin:18px 15px}.meili-actions button{width:100%}}
+        .meili-end img{border-radius:50%;overflow:hidden}.meili-card img{mix-blend-mode:multiply}.meili-card span{font-size:14px}.meili-card:has(input:disabled){opacity:.78}
+        @media print{.meili-info,.meili-nav,.meili-actions{display:none}.meili-card,.meili-balance,.meili-contact{break-inside:avoid}}
+    </style>
 </head>
 <body class="min-h-screen bg-gray-100 py-4 sm:py-6 px-2 sm:px-4 font-sans flex justify-center">
 
@@ -500,6 +511,57 @@
         </div>
     </main>
 
+    <main id="meili-survey-view" class="meili-page hidden">
+        <nav class="meili-nav" aria-label="問卷導覽"><span>萬年美利 · 人生規劃問卷</span><button type="button" data-switch-survey>切換問卷</button></nav>
+        <div id="meili-pdf-content">
+            <img class="meili-hero" src="assets/wan-nian-mei-li/hero.jpg" width="1132" height="510" alt="國泰人壽。美好不只一種，人生由您選擇。家人一同在河畔草地野餐。" />
+            <p class="meili-mobile-intro">每個人對美好生活都有不同的想像與在意。有人重視家庭保障，也有人關心退休生活與資產安排。<strong>現在的您，更重視哪一種人生規劃？</strong></p>
+            <form id="meili-form" onsubmit="return false;">
+                <section class="meili-section" aria-labelledby="meili-q1">
+                    <h2 id="meili-q1" class="meili-title"><span class="meili-number">1</span><span>對於未來，您更重視哪些安排？<small class="meili-note">請選出您較重視的 2 項</small></span></h2>
+                    <div class="meili-grid">
+                        <label class="meili-card"><img src="assets/wan-nian-mei-li/life.jpg" width="130" height="124" alt="" loading="lazy" /><strong>享受生活</strong><span>保有餘裕安排旅行、興趣與休閒活動</span><input type="checkbox" data-meili-priority value="enjoy_life" aria-label="享受生活" /></label>
+                        <label class="meili-card"><img src="assets/wan-nian-mei-li/family.jpg" width="110" height="124" alt="" loading="lazy" /><strong>守護家庭</strong><span>面對人生變化時<br />可維持家人的生活安定</span><input type="checkbox" data-meili-priority value="protect_family" aria-label="守護家庭" /></label>
+                        <label class="meili-card"><img src="assets/wan-nian-mei-li/retirement.jpg" width="145" height="140" alt="" loading="lazy" /><strong>從容退休</strong><span>提早規劃退休所需<br />維持理想生活品質</span><input type="checkbox" data-meili-priority value="retirement" aria-label="從容退休" /></label>
+                        <label class="meili-card"><img src="assets/wan-nian-mei-li/legacy.jpg" width="120" height="124" alt="" loading="lazy" /><strong>資產傳承</strong><span>妥善安排累積資產<br />將心意延續下一代</span><input type="checkbox" data-meili-priority value="legacy" aria-label="資產傳承" /></label>
+                    </div>
+                    <p id="meili-selection-status" class="meili-count" aria-live="polite">已選 0／2 項</p>
+                </section>
+                <section class="meili-section" aria-labelledby="meili-q2">
+                    <h2 id="meili-q2" class="meili-title"><span class="meili-number">2</span><span>如果多一份準備，您會更重視哪一端？<small class="meili-note">請點選較接近您想法的位置</small></span></h2>
+                    <div class="meili-balance">
+                        <div class="meili-ends">
+                            <div class="meili-end"><img src="assets/wan-nian-mei-li/loved-ones.jpg" width="214" height="192" alt="相伴的兩人" loading="lazy" /><h3>留給重要的人</h3><p>面對突如其來的變化時<br />希望重要的人仍有所依靠</p></div>
+                            <div class="meili-end"><img src="assets/wan-nian-mei-li/future-self.jpg" width="224" height="201" alt="自在旅行的自己" loading="lazy" /><h3>留給未來的自己</h3><p>迎接退休階段時<br />希望仍能保有生活的自主與從容</p></div>
+                        </div>
+                        <div class="meili-scale" role="radiogroup" aria-labelledby="meili-q2">
+                            <label><input type="radio" name="meili-preference" value="loved_ones" /><span>重要的人</span></label>
+                            <label><input type="radio" name="meili-preference" value="lean_loved_ones" /><span>較偏向<br />重要的人</span></label>
+                            <label><input type="radio" name="meili-preference" value="balanced" /><span>兩者同樣<br />重視</span></label>
+                            <label><input type="radio" name="meili-preference" value="lean_future_self" /><span>較偏向<br />未來的自己</span></label>
+                            <label><input type="radio" name="meili-preference" value="future_self" /><span>未來的自己</span></label>
+                        </div>
+                    </div>
+                </section>
+                <section class="meili-contact" aria-label="填寫資料與確認事項">
+                    <div class="meili-agreements">
+                        <label><input id="meili-explained" type="checkbox" /><span>服務人員已親自說明內容與個資告知事項。</span></label>
+                        <label><input id="meili-referral" type="checkbox" /><span>願意介紹身邊朋友瞭解並關注保障規劃。</span></label>
+                    </div>
+                    <div class="meili-fields">
+                        <div><label for="meili-name">姓名</label><input id="meili-name" autocomplete="name" placeholder="請輸入您的姓名" /></div>
+                        <div><label for="meili-phone">手機</label><input id="meili-phone" type="tel" autocomplete="tel" placeholder="請輸入手機號碼" /></div>
+                        <div><label for="meili-agent">服務人員</label><select id="meili-agent" disabled><option value="">正在載入團隊成員...</option></select><p id="meili-agent-status"></p></div>
+                        <div><label for="meili-visit-date">拜訪日期</label><div class="relative"><input id="meili-visit-date" type="date" class="survey-date-input" /><span id="meili-visit-date-placeholder" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">請選擇拜訪日期</span></div></div>
+                    </div>
+                    <p class="meili-privacy">國泰人壽依據個人資料保護法第八條第一項規定，就臺端個人資料之蒐集、處理及利用方式等，請臺端至國泰人壽官網詳閱「個人資料保護法應告知事項」。</p>
+                </section>
+            </form>
+        </div>
+        <div class="meili-actions"><button id="meili-submit-btn" type="button">完成填寫並送出</button><button id="meili-download-btn" type="button">本次填寫紀錄留存</button></div>
+        <details class="meili-info"><summary>萬年美利商品與活動資訊 ▾</summary><p>以下保留您提供的 2026 年 9 月版 DM。活動期間及條件依原活動辦法為準；此區為說明，不是問卷選項。點圖片可放大檢視。</p><a href="assets/wan-nian-mei-li/information.jpg" target="_blank" rel="noopener"><img src="assets/wan-nian-mei-li/information.jpg" width="1132" height="1600" alt="原 DM 背面：萬年美利商品特色，以及至民國115年12月2日的東京雙人來回機票活動說明。點擊查看完整原稿。" loading="lazy" /></a></details>
+    </main>
+
     <!-- 提交成功的 Toast 提示 -->
     <div id="toast" class="hidden fixed bottom-5 right-5 left-5 sm:left-auto bg-green-800 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center space-x-3 transition-opacity duration-300">
         <i data-lucide="shield-alert" class="w-6 h-6 text-green-300 flex-shrink-0"></i>
@@ -509,12 +571,12 @@
     <!-- JavaScript 邏輯 -->
     <script>
         const APP_CONFIG = {
-            apiUrl: 'https://script.google.com/macros/s/AKfycbwhFC-vHbVdPBtW8s_cwj0_dDnzpzeBEZ4suM-lGpAewBHIRdZd0_N6BX7poAg0ueLplA/exec'
+            apiUrl: 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE'
         };
 
         const HTML2PDF_SCRIPT_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
 
-        const SUPPORTED_SURVEY_FORM_IDS = ['policy-check', 'family-protection'];
+        const SUPPORTED_SURVEY_FORM_IDS = ['policy-check', 'family-protection', 'wan-nian-mei-li'];
         const BUILT_IN_SURVEY_TEMPLATES = [
             {
                 formId: 'policy-check',
@@ -527,6 +589,11 @@
                 formName: '家庭保障',
                 title: '人生有進度，保障要同步',
                 description: '隨著人生不同階段的轉變，家庭責任與保障需求也會有所不同。'
+            },
+            {
+                formId: 'wan-nian-mei-li', formName: '萬年美利',
+                title: '美好不只一種，人生由您選擇',
+                description: '每個人對美好生活都有不同的想像與在意。現在的您，更重視哪一種人生規劃？'
             }
         ];
         let availableSurveyTemplates = BUILT_IN_SURVEY_TEMPLATES.slice();
@@ -558,6 +625,12 @@
             setupTemplateNavigation();
             setupDateInput('visitDate', 'visit-date-placeholder');
             setupDateInput('family-visit-date', 'family-visit-date-placeholder');
+            setupDateInput('meili-visit-date', 'meili-visit-date-placeholder');
+            document.querySelectorAll('[data-meili-priority]').forEach(input => input.addEventListener('change', () => {
+                const count = checkedValues('[data-meili-priority]').length;
+                document.querySelectorAll('[data-meili-priority]').forEach(option => { option.disabled = count >= 2 && !option.checked; });
+                document.getElementById('meili-selection-status').textContent = `已選 ${count}／2 項` + (count >= 2 ? '；如需更改，請先取消一項。' : '');
+            }));
             loadSurveyPageBootstrap();
 
             const otherCheckbox = document.getElementById('other');
@@ -571,6 +644,8 @@
             document.getElementById('family-submit-btn').addEventListener('click', submitSurvey);
             document.getElementById('download-btn').addEventListener('click', downloadSurveyPdf);
             document.getElementById('family-download-btn').addEventListener('click', downloadSurveyPdf);
+            document.getElementById('meili-submit-btn').addEventListener('click', submitSurvey);
+            document.getElementById('meili-download-btn').addEventListener('click', downloadSurveyPdf);
         }
 
         function setupDateInput(inputId, placeholderId) {
@@ -785,6 +860,7 @@
             document.getElementById('template-picker-view').classList.add('hidden');
             document.getElementById('policy-survey-view').classList.toggle('hidden', formId !== 'policy-check');
             document.getElementById('family-survey-view').classList.toggle('hidden', formId !== 'family-protection');
+            document.getElementById('meili-survey-view').classList.toggle('hidden', formId !== 'wan-nian-mei-li');
             if (updateUrl) setFormQueryParameter(formId);
             document.title = `國泰人壽 - ${selected.formName}`;
             updateSurveyTemplateDiagnostics();
@@ -794,6 +870,7 @@
         function showTemplatePicker(updateUrl = true) {
             document.getElementById('policy-survey-view').classList.add('hidden');
             document.getElementById('family-survey-view').classList.add('hidden');
+            document.getElementById('meili-survey-view').classList.add('hidden');
             document.getElementById('template-picker-view').classList.remove('hidden');
             if (updateUrl) setFormQueryParameter('');
             document.title = '國泰人壽 - 問卷中心';
@@ -886,7 +963,7 @@
                     : tone === 'error'
                         ? 'text-red-600'
                         : 'text-gray-500';
-            [status, familyStatus].forEach((element) => {
+            [status, familyStatus, document.getElementById('meili-agent-status')].forEach((element) => {
                 element.classList.remove('text-red-600', 'text-amber-600', 'text-green-700', 'text-gray-500', 'text-slate-500');
                 element.classList.add(toneClass);
                 element.textContent = message;
@@ -897,7 +974,7 @@
             if (!teamMemberNames.length) populateAgentSelects('名單載入失敗，請按下方重新載入');
             const message = '服務人員名單暫時無法載入，請確認網路後重新載入。';
             const buttonHtml = '<button type="button" data-retry-agent-names class="ml-1 font-bold underline">重新載入</button>';
-            ['agent-status', 'family-agent-status'].forEach((id) => {
+            ['agent-status', 'family-agent-status', 'meili-agent-status'].forEach((id) => {
                 const element = document.getElementById(id);
                 element.classList.remove('text-amber-600', 'text-green-700', 'text-gray-500', 'text-slate-500');
                 element.classList.add('text-red-600');
@@ -937,7 +1014,7 @@
         }
 
         function populateAgentSelects(emptyMessage) {
-            ['agent', 'family-agent'].forEach((id) => {
+            ['agent', 'family-agent', 'meili-agent'].forEach((id) => {
                 const select = document.getElementById(id);
                 const currentValue = select.value;
                 select.replaceChildren();
@@ -961,7 +1038,7 @@
         async function submitSurvey() {
             if (surveySubmissionInProgress) return;
             const submitBtn = document.getElementById(
-                activeSurveyTemplate.formId === 'family-protection' ? 'family-submit-btn' : 'submit-btn'
+                activeSurveyTemplate.formId === 'wan-nian-mei-li' ? 'meili-submit-btn' : activeSurveyTemplate.formId === 'family-protection' ? 'family-submit-btn' : 'submit-btn'
             );
             const formData = collectSurveyData();
             const validationMessage = validateSurveyData(formData);
@@ -1020,6 +1097,15 @@
         }
 
         function collectSurveyData() {
+            if (activeSurveyTemplate.formId === 'wan-nian-mei-li') {
+                return {
+                    source: 'survey-web', formId: activeSurveyTemplate.formId, formName: activeSurveyTemplate.formName,
+                    meiliAnswers: { priorities: checkedValues('[data-meili-priority]'), preference: checkedValue('input[name="meili-preference"]') },
+                    agreements: { explained: document.getElementById('meili-explained').checked, referral: document.getElementById('meili-referral').checked },
+                    name: document.getElementById('meili-name').value.trim(), phone: document.getElementById('meili-phone').value.trim(),
+                    agent: document.getElementById('meili-agent').value.trim(), visitDate: document.getElementById('meili-visit-date').value
+                };
+            }
             if (activeSurveyTemplate.formId === 'family-protection') {
                 return collectFamilySurveyData();
             }
@@ -1092,6 +1178,10 @@
         }
 
         function validateSurveyData(data) {
+            if (data.formId === 'wan-nian-mei-li') {
+                if (data.meiliAnswers.priorities.length !== 2) return '請選出您較重視的兩項未來安排。';
+                if (!data.meiliAnswers.preference) return '請選擇您較重視哪一端的準備。';
+            }
             if (data.formId === 'family-protection') {
                 if (!data.familyAnswers.lastReview) return '請選擇最近一次檢視保障的時間。';
                 if (!data.familyAnswers.concerns.length) return '請至少選擇一項目前最在意的保障需求。';
@@ -1210,14 +1300,15 @@
 
         async function downloadSurveyPdf() {
             const isFamily = activeSurveyTemplate.formId === 'family-protection';
-            const downloadBtn = document.getElementById(isFamily ? 'family-download-btn' : 'download-btn');
+            const isMeili = activeSurveyTemplate.formId === 'wan-nian-mei-li';
+            const downloadBtn = document.getElementById(isMeili ? 'meili-download-btn' : isFamily ? 'family-download-btn' : 'download-btn');
             downloadBtn.disabled = true;
             downloadBtn.classList.add('opacity-75', 'cursor-wait');
             downloadBtn.textContent = 'PDF 產生中...';
 
-            const element = document.getElementById(isFamily ? 'family-pdf-content' : 'pdf-content');
-            const rawName = document.getElementById(isFamily ? 'family-name' : 'name').value;
-            const rawDate = document.getElementById(isFamily ? 'family-visit-date' : 'visitDate').value;
+            const element = document.getElementById(isMeili ? 'meili-pdf-content' : isFamily ? 'family-pdf-content' : 'pdf-content');
+            const rawName = document.getElementById(isMeili ? 'meili-name' : isFamily ? 'family-name' : 'name').value;
+            const rawDate = document.getElementById(isMeili ? 'meili-visit-date' : isFamily ? 'family-visit-date' : 'visitDate').value;
             const nameStr = rawName || '未填寫姓名';
             const dateStr = rawDate ? rawDate.replace(/-/g, '') : '未填寫日期';
 
@@ -1240,7 +1331,7 @@
                 },
                 pagebreak: {
                     mode: ['css', 'legacy'],
-                    before: isFamily ? [] : '#page2'
+                    before: isFamily || isMeili ? [] : '#page2'
                 }
             };
 

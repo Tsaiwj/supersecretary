@@ -11,8 +11,10 @@
     <!-- 引入 Lucide Icons -->
     <script async src="https://unpkg.com/lucide@latest" onload="window.lucide && window.lucide.createIcons()"></script>
     <style>
-        .template-entry { display: flex; flex-direction: column; min-width: 0; }
-        .template-entry-title, .template-entry-cta { font-size: 1.125rem; line-height: 1.5; }
+        #template-card-list .template-entry { display: flex; flex-direction: column; min-width: 0; border:1px solid #d9e2e9; border-bottom:5px solid #cbd5df; box-shadow:0 7px 0 #e0e7ed,0 14px 28px #1834491a; transition:transform .15s,box-shadow .15s; }
+        #template-card-list .template-entry:hover { transform:translateY(-3px);box-shadow:0 9px 0 #dce4eb,0 18px 32px #18344925; }
+        #template-card-list .template-entry:active { transform:translateY(2px);box-shadow:0 3px 0 #dce4eb,0 8px 16px #18344918; }
+        .template-entry-title, .template-entry-cta { font-size: 1.25rem; line-height: 1.5; }
         .template-entry-cta {
             display: flex;
             align-items: center;
@@ -22,13 +24,13 @@
             min-height: 52px;
             margin-top: auto;
             padding: 12px 10px;
-            border: 1px solid #15803d;
+            border: 1px solid #EA4951;
             border-radius: 12px;
-            background: #15803d;
+            background: #EA4951;
             color: #fff;
             font-weight: 900;
         }
-        .template-entry--family .template-entry-cta { background: #267f7b; border-color: #267f7b; }
+        .template-entry--family .template-entry-cta { background: #EA4951; border-color: #EA4951; }
         .template-entry:hover .template-entry-cta { filter: brightness(.94); }
         .template-entry:focus-visible { outline: 3px solid #267f7b; outline-offset: 4px; }
         .template-entry-finger { flex-shrink: 0; font-size: 1.25rem; }
@@ -624,7 +626,7 @@
             // Cached titles may not grant access: wait for live availability on configured sites.
             if (isApiConfigured()) availableSurveyTemplates = [];
             setupTemplateNavigation();
-            if (isApiConfigured()) document.getElementById('template-picker-status').textContent = '正在確認目前開放的問卷…';
+            if (isApiConfigured()) document.getElementById('template-picker-status').textContent = '正在載入問卷選單…';
             setupDateInput('visitDate', 'visit-date-placeholder');
             setupDateInput('family-visit-date', 'family-visit-date-placeholder');
             setupDateInput('meili-visit-date', 'meili-visit-date-placeholder');
@@ -633,7 +635,9 @@
                 document.querySelectorAll('[data-meili-priority]').forEach(option => { option.disabled = count >= 2 && !option.checked; });
                 document.getElementById('meili-selection-status').textContent = `已選 ${count}／2 項` + (count >= 2 ? '；如需更改，請先取消一項。' : '');
             }));
-            loadSurveyPageBootstrap();
+            // Fetch the small, live template list independently; do not wait for team names.
+            loadSurveyTemplates();
+            loadAgentNames();
 
             const otherCheckbox = document.getElementById('other');
             const otherTextInput = document.getElementById('otherText');
@@ -798,7 +802,7 @@
             retry.type = 'button';
             retry.textContent = '重新讀取';
             retry.style.cssText = 'margin-left:12px;padding:8px 16px;border:1px solid;border-radius:8px';
-            retry.addEventListener('click', () => { retry.disabled = true; loadSurveyPageBootstrap(); });
+            retry.addEventListener('click', () => { retry.disabled = true; loadSurveyTemplates(); });
             status.appendChild(retry);
         }
 

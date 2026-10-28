@@ -603,7 +603,7 @@
         let surveySubmissionInProgress = false;
         const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
         const AGENT_NAMES_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-        const SURVEY_TEMPLATES_CACHE_PREFIX = 'survey-templates-v2:';
+        const SURVEY_TEMPLATES_CACHE_PREFIX = 'survey-templates-v3:';
         const SURVEY_TEMPLATES_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
         document.addEventListener('DOMContentLoaded', bootstrap);
@@ -621,8 +621,10 @@
         }
 
         function initSurveyPage() {
-            restoreSurveyTemplatesFromCache();
+            // Cached titles may not grant access: wait for live availability on configured sites.
+            if (isApiConfigured()) availableSurveyTemplates = [];
             setupTemplateNavigation();
+            if (isApiConfigured()) document.getElementById('template-picker-status').textContent = '正在確認目前開放的問卷…';
             setupDateInput('visitDate', 'visit-date-placeholder');
             setupDateInput('family-visit-date', 'family-visit-date-placeholder');
             setupDateInput('meili-visit-date', 'meili-visit-date-placeholder');
@@ -683,13 +685,13 @@
                 const supported = (result.templates || []).filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
                 );
-                if (supported.length) {
+                if (Array.isArray(result.templates)) {
                     writeSurveyTemplatesCache(supported);
                     applySurveyTemplates(supported);
                 }
             } catch (error) {
                 console.warn('Survey template metadata load failed:', error);
-                document.getElementById('template-picker-status').textContent = '暫時無法讀取線上設定，已顯示內建問卷。';
+                showAvailabilityRetry();
             }
         }
 
@@ -727,12 +729,13 @@
                 const supported = (result.templates || []).filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
                 );
-                if (supported.length) {
+                if (Array.isArray(result.templates)) {
                     writeSurveyTemplatesCache(supported);
                     applySurveyTemplates(supported);
                 }
             } catch (error) {
                 console.warn('Survey page bootstrap load failed:', error);
+                showAvailabilityRetry();
                 if (hasCachedAgentNames) {
                     setAgentStatus(`已載入 ${teamMemberNames.length} 位服務人員（最近一次名單）。`, 'warning');
                 } else {
@@ -743,13 +746,14 @@
 
         function normalizeSurveyTemplates(templates) {
             const incoming = Array.isArray(templates) ? templates : [];
-            return BUILT_IN_SURVEY_TEMPLATES.map((builtIn) => {
+            return BUILT_IN_SURVEY_TEMPLATES.filter(builtIn => incoming.some(t => t && t.formId === builtIn.formId)).map((builtIn) => {
                 const remote = incoming.find((template) => template && template.formId === builtIn.formId) || {};
                 return {
                     formId: builtIn.formId,
                     formName: String(remote.formName || builtIn.formName),
                     title: String(remote.title || builtIn.title),
-                    description: builtIn.description
+                    description: builtIn.description,
+                    enabled: remote.enabled !== false && remote.showOnHome !== false
                 };
             });
         }
@@ -759,13 +763,15 @@
                 formId: String(template.formId || ''),
                 formName: String(template.formName || ''),
                 title: String(template.title || ''),
-                description: String(template.description || '')
+                description: String(template.description || ''),
+                enabled: template.enabled !== false
             })));
         }
 
         function applySurveyTemplates(templates) {
-            templates = normalizeSurveyTemplates(templates);
-            if (!templates.length || surveyTemplatesSignature(templates) === surveyTemplatesSignature(availableSurveyTemplates)) {
+            templates = normalizeSurveyTemplates(templates).filter(template => template.enabled);
+            if (surveyTemplatesSignature(templates) === surveyTemplatesSignature(availableSurveyTemplates)) {
+                if (!templates.length) renderTemplateCards();
                 return;
             }
 
@@ -775,7 +781,7 @@
             const picker = document.getElementById('template-picker-view');
 
             if (!picker.classList.contains('hidden')) {
-                renderTemplateCards();
+                renderSurveyNavigation();
             } else if (updatedActiveTemplate) {
                 activeSurveyTemplate = updatedActiveTemplate;
                 document.title = `國泰人壽 - ${updatedActiveTemplate.formName}`;
@@ -783,6 +789,17 @@
             } else {
                 renderSurveyNavigation();
             }
+        }
+
+        function showAvailabilityRetry() {
+            const status = document.getElementById('template-picker-status');
+            status.textContent = '暫時無法確認開放問卷，請重新讀取。';
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.textContent = '重新讀取';
+            retry.style.cssText = 'margin-left:12px;padding:8px 16px;border:1px solid;border-radius:8px';
+            retry.addEventListener('click', () => { retry.disabled = true; loadSurveyPageBootstrap(); });
+            status.appendChild(retry);
         }
 
         function restoreSurveyTemplatesFromCache() {

@@ -87,11 +87,16 @@
 <body class="min-h-screen bg-gray-100 py-4 sm:py-6 px-2 sm:px-4 font-sans flex justify-center">
 
     <!-- 同一網站的問卷選擇首頁 -->
+    <style>
+        .survey-header-orbit{left:-3rem;right:auto;pointer-events:none}
+        .template-placeholder{height:260px;border:2px solid #fff;border-radius:16px;background:linear-gradient(#fff 0 48%,#f6fafb 48%);box-shadow:0 5px 12px #215f7010}
+        .template-entry:disabled{cursor:wait;opacity:.75}
+    </style>
     <main id="template-picker-view" class="hidden w-full max-w-[800px] self-start overflow-hidden rounded-2xl border border-[#cfe3e8] bg-[#edf7fa] shadow-xl">
         <header class="relative overflow-hidden bg-gradient-to-br from-[#2f9791] to-[#277f9d] px-6 py-8 text-white sm:px-10">
-            <div class="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-white/10"></div>
+            <div aria-hidden="true" class="survey-header-orbit absolute -top-16 h-44 w-44 rounded-full bg-white/10"></div>
             <div class="relative flex items-center gap-3">
-                <img loading="lazy" decoding="async" src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-12 w-12 rounded-lg object-contain" />
+                <img decoding="async" src="https://i.ibb.co/21Q7LfpT/image.png" alt="國泰人壽 Logo" class="h-12 w-12 rounded-lg object-contain" style="background:white;padding:4px" />
                 <div>
                     <p class="text-xs font-semibold tracking-[.28em] text-white/80">CATHAY LIFE</p>
                     <h1 class="mt-1 text-2xl font-black tracking-wide sm:text-3xl">問卷中心</h1>
@@ -101,7 +106,7 @@
         </header>
         <section class="p-5 sm:p-8">
             <div id="template-card-list" class="grid gap-4 sm:grid-cols-2"></div>
-            <p id="template-picker-status" class="mt-5 text-center text-xs text-slate-500">正在確認可使用的問卷...</p>
+            <p id="template-picker-status" class="mt-5 text-center text-xs text-slate-500" role="status" aria-live="polite"></p>
         </section>
     </main>
 
@@ -768,6 +773,9 @@
         let teamMemberNames = [];
         let html2PdfLoadPromise = null;
         let surveySubmissionInProgress = false;
+        let surveyAvailabilityConfirmed = false;
+        let surveyTemplatesLoadPromise = null;
+        let pendingSurveySelection = false;
         const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
         const AGENT_NAMES_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
         const SURVEY_TEMPLATES_CACHE_PREFIX = 'survey-templates-v3:';
@@ -790,10 +798,13 @@
         function initSurveyPage() {
             setupJingzhiSurvey();
             setupLohasSurvey();
-            // Cached titles may not grant access: wait for live availability on configured sites.
-            if (isApiConfigured()) availableSurveyTemplates = [];
+            // Cached cards are a preview, never permission to open/submit a disabled survey.
+            surveyAvailabilityConfirmed = !isApiConfigured();
+            if (isApiConfigured()) {
+                availableSurveyTemplates = [];
+                restoreSurveyTemplatesFromCache();
+            }
             setupTemplateNavigation();
-            if (isApiConfigured()) document.getElementById('template-picker-status').textContent = '正在載入問卷選單…';
             setupDateInput('visitDate', 'visit-date-placeholder');
             setupDateInput('family-visit-date', 'family-visit-date-placeholder');
             setupDateInput('meili-visit-date', 'meili-visit-date-placeholder');
@@ -841,7 +852,13 @@
             renderSurveyNavigation();
         }
 
-        async function loadSurveyTemplates() {
+        function loadSurveyTemplates() {
+            if (surveyTemplatesLoadPromise) return surveyTemplatesLoadPromise;
+            surveyTemplatesLoadPromise = fetchSurveyTemplates().finally(() => { surveyTemplatesLoadPromise = null; });
+            return surveyTemplatesLoadPromise;
+        }
+
+        async function fetchSurveyTemplates() {
             if (!isApiConfigured()) {
                 document.getElementById('template-picker-status').textContent = '預覽模式：尚未設定 Apps Script Web App URL。';
                 return;
@@ -853,7 +870,8 @@
                     requireOk: true
                 });
 
-                const supported = (result.templates || []).filter((template) =>
+                if (!Array.isArray(result.templates)) throw new Error('問卷清單格式不正確。');
+                const supported = result.templates.filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
                 );
                 if (Array.isArray(result.templates)) {
@@ -941,7 +959,9 @@
 
         function applySurveyTemplates(templates) {
             templates = normalizeSurveyTemplates(templates).filter(template => template.enabled);
-            if (surveyTemplatesSignature(templates) === surveyTemplatesSignature(availableSurveyTemplates)) {
+            const wasConfirmed = surveyAvailabilityConfirmed;
+            surveyAvailabilityConfirmed = true;
+            if (wasConfirmed && surveyTemplatesSignature(templates) === surveyTemplatesSignature(availableSurveyTemplates)) {
                 if (!templates.length) renderTemplateCards();
                 return;
             }
@@ -986,7 +1006,7 @@
                 const supported = (Array.isArray(cached.templates) ? cached.templates : []).filter((template) =>
                     SUPPORTED_SURVEY_FORM_IDS.includes(String(template.formId || ''))
                 );
-                if (supported.length) availableSurveyTemplates = normalizeSurveyTemplates(supported);
+                availableSurveyTemplates = normalizeSurveyTemplates(supported).filter(template => template.enabled);
             } catch (error) {
                 console.warn('Survey template cache read failed:', error);
             }
@@ -1006,7 +1026,7 @@
         function renderSurveyNavigation() {
             const requestedFormId = new URLSearchParams(window.location.search).get('form');
             const requested = availableSurveyTemplates.find((template) => template.formId === requestedFormId);
-            if (requested) {
+            if (requested && surveyAvailabilityConfirmed) {
                 selectSurveyTemplate(requested.formId, false);
                 return;
             }
@@ -1018,6 +1038,15 @@
             const list = document.getElementById('template-card-list');
             const visibleTemplates = availableSurveyTemplates;
             list.innerHTML = '';
+            list.setAttribute('aria-busy', String(!surveyAvailabilityConfirmed));
+            if (!visibleTemplates.length && !surveyAvailabilityConfirmed) {
+                for (let i = 0; i < 2; i++) {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'template-placeholder';
+                    placeholder.setAttribute('aria-hidden', 'true');
+                    list.appendChild(placeholder);
+                }
+            }
             visibleTemplates.forEach((template) => {
                 const isFamily = template.formId === 'family-protection';
                 const button = document.createElement('button');
@@ -1035,13 +1064,31 @@
                 button.addEventListener('click', () => selectSurveyTemplate(template.formId, true));
                 list.appendChild(button);
             });
-            document.getElementById('template-picker-status').textContent = visibleTemplates.length
+            document.getElementById('template-picker-status').textContent = !surveyAvailabilityConfirmed
+                ? '' : visibleTemplates.length
                 ? `目前共有 ${visibleTemplates.length} 份問卷可填寫。`
                 : '目前沒有可填寫的問卷。';
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function selectSurveyTemplate(formId, updateUrl) {
+        async function selectSurveyTemplate(formId, updateUrl) {
+            if (!surveyAvailabilityConfirmed) {
+                if (pendingSurveySelection) return;
+                pendingSurveySelection = true;
+                document.querySelectorAll('.template-entry').forEach(button => button.disabled = true);
+                document.getElementById('template-picker-status').textContent = '正在確認這份問卷是否開放…';
+                try {
+                    await loadSurveyTemplates();
+                    if (!surveyAvailabilityConfirmed) return;
+                    if (!availableSurveyTemplates.some(template => template.formId === formId)) {
+                        document.getElementById('template-picker-status').textContent = '這份問卷目前未開放，請選擇其他問卷。';
+                        return;
+                    }
+                } finally {
+                    pendingSurveySelection = false;
+                    document.querySelectorAll('.template-entry').forEach(button => button.disabled = false);
+                }
+            }
             const selected = availableSurveyTemplates.find((template) => template.formId === formId);
             if (!selected) return;
             activeSurveyTemplate = selected;

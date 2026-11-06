@@ -86,6 +86,15 @@
 </head>
 <body class="min-h-screen bg-gray-100 py-4 sm:py-6 px-2 sm:px-4 font-sans flex justify-center">
 
+    <section id="survey-entry-loading" role="status" aria-live="polite" style="align-self:flex-start;width:100%;max-width:800px;margin-top:24px;padding:36px 24px;text-align:center;background:white;border:1px solid #cfe3e8;border-radius:20px;box-shadow:0 8px 24px #215f7010">
+        <p id="survey-entry-loading-text" style="font-size:20px;font-weight:700;color:#267f7b">正在載入問卷…</p>
+        <button id="survey-entry-retry" type="button" hidden style="margin-top:20px;padding:12px 24px;border-radius:12px;background:#EA4951;color:white" onclick="this.hidden=true;showSurveyEntryLoading();loadSurveyTemplates()">重新載入</button>
+    </section>
+    <script>
+        if (new URLSearchParams(location.search).get('form')) document.getElementById('survey-entry-loading-text').textContent = '正在載入特定問卷…';
+    </script>
+    <noscript>請開啟瀏覽器 JavaScript 後重新載入問卷。</noscript>
+
     <!-- 同一網站的問卷選擇首頁 -->
     <style>
         .survey-header-orbit{left:-3rem;right:auto;pointer-events:none}
@@ -774,6 +783,7 @@
         let html2PdfLoadPromise = null;
         let surveySubmissionInProgress = false;
         let surveyAvailabilityConfirmed = false;
+        let surveyInitialNavigationPending = true;
         let surveyTemplatesLoadPromise = null;
         let pendingSurveySelection = false;
         const AGENT_NAMES_CACHE_PREFIX = 'survey-team-member-names-v1:';
@@ -968,6 +978,10 @@
 
             const currentFormId = activeSurveyTemplate.formId;
             availableSurveyTemplates = templates.slice();
+            if (surveyInitialNavigationPending) {
+                renderSurveyNavigation();
+                return;
+            }
             const updatedActiveTemplate = availableSurveyTemplates.find((template) => template.formId === currentFormId);
             const picker = document.getElementById('template-picker-view');
 
@@ -983,6 +997,11 @@
         }
 
         function showAvailabilityRetry() {
+            if (surveyInitialNavigationPending) {
+                document.getElementById('survey-entry-loading-text').textContent = '暫時無法載入問卷，請重新讀取。';
+                document.getElementById('survey-entry-retry').hidden = false;
+                return;
+            }
             const status = document.getElementById('template-picker-status');
             status.textContent = '暫時無法確認開放問卷，請重新讀取。';
             const retry = document.createElement('button');
@@ -1024,6 +1043,10 @@
         }
 
         function renderSurveyNavigation() {
+            if (!surveyAvailabilityConfirmed) {
+                showSurveyEntryLoading();
+                return;
+            }
             const requestedFormId = new URLSearchParams(window.location.search).get('form');
             const requested = availableSurveyTemplates.find((template) => template.formId === requestedFormId);
             if (requested && surveyAvailabilityConfirmed) {
@@ -1036,6 +1059,18 @@
             }
 
             showTemplatePicker(false);
+        }
+
+        function showSurveyEntryLoading() {
+            const formId = new URLSearchParams(location.search).get('form');
+            const template = BUILT_IN_SURVEY_TEMPLATES.find(t => t.formId === formId);
+            document.getElementById('survey-entry-loading-text').textContent = formId
+                ? `正在載入${template ? '「' + template.formName + '」' : '特定問卷'}…` : '正在載入問卷…';
+        }
+
+        function finishSurveyEntryLoading() {
+            surveyInitialNavigationPending = false;
+            document.getElementById('survey-entry-loading').classList.add('hidden');
         }
 
         function showSurveyUnavailable() {
@@ -1111,6 +1146,7 @@
             const selected = availableSurveyTemplates.find((template) => template.formId === formId);
             if (!selected) return;
             activeSurveyTemplate = selected;
+            finishSurveyEntryLoading();
             document.getElementById('template-picker-view').classList.add('hidden');
             document.getElementById('policy-survey-view').classList.toggle('hidden', formId !== 'policy-check');
             document.getElementById('family-survey-view').classList.toggle('hidden', formId !== 'family-protection');
@@ -1122,10 +1158,11 @@
             if (updateUrl) setFormQueryParameter(formId);
             document.title = `國泰人壽 - ${selected.formName}`;
             updateSurveyTemplateDiagnostics();
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            if (updateUrl) window.scrollTo({ top: 0, behavior: 'instant' });
         }
 
         function showTemplatePicker(updateUrl = true) {
+            finishSurveyEntryLoading();
             document.getElementById('template-picker-status').style.fontSize = '';
             document.getElementById('policy-survey-view').classList.add('hidden');
             document.getElementById('family-survey-view').classList.add('hidden');
@@ -1136,7 +1173,7 @@
             if (updateUrl) setFormQueryParameter('');
             document.title = '國泰人壽 - 問卷中心';
             renderTemplateCards();
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            if (updateUrl) window.scrollTo({ top: 0, behavior: 'instant' });
         }
 
         function setFormQueryParameter(formId) {
